@@ -20,7 +20,7 @@
 <a class="skip-link" href="#main">Lewati ke konten utama</a>
 
 <aside class="sidebar" id="sidebar">
-  <div class="brand">
+  <a class="brand" href="#/portofolio" aria-label="Rebalance — beranda">
     <span class="brand__mark" aria-hidden="true">
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2.6" opacity=".28"/>
@@ -28,24 +28,19 @@
         <circle cx="12" cy="12" r="2.4" fill="currentColor"/>
       </svg>
     </span>
-    <span class="brand__text">
-      <strong>Rebalance</strong>
-      <small>perencana portofolio</small>
-    </span>
-  </div>
+  </a>
 
   <nav class="nav" aria-label="Navigasi utama">
-    <a class="nav__item" href="#/portofolio" data-route="portofolio">
+    <a class="nav__item" href="#/portofolio" data-route="portofolio" data-tip="Portofolio" aria-label="Portofolio">
       <span class="nav__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <path d="M12 3.5a8.5 8.5 0 1 0 8.5 8.5H12V3.5Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>
           <path d="M14.6 2.2a9.4 9.4 0 0 1 7.2 7.2h-7.2V2.2Z" fill="currentColor" opacity=".65"/>
         </svg>
       </span>
-      <span class="nav__label">Portofolio</span>
       <span class="nav__badge" id="nav-count" hidden></span>
     </a>
-    <a class="nav__item" href="#/stock" data-route="stock">
+    <a class="nav__item" href="#/stock" data-route="stock" data-tip="Stock" aria-label="Stock">
       <span class="nav__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <path d="M3.5 19.5h17" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" fill="none"/>
@@ -54,9 +49,8 @@
           <rect x="15.6" y="4" width="3.4" height="13" rx="1.2" fill="currentColor"/>
         </svg>
       </span>
-      <span class="nav__label">Stock</span>
     </a>
-    <a class="nav__item" href="#/crypto" data-route="crypto">
+    <a class="nav__item" href="#/crypto" data-route="crypto" data-tip="Crypto" aria-label="Crypto">
       <span class="nav__icon" aria-hidden="true">
         <svg viewBox="0 0 24 24">
           <ellipse cx="12" cy="6.6" rx="7.6" ry="3.2" fill="none" stroke="currentColor" stroke-width="1.9"/>
@@ -64,19 +58,16 @@
           <path d="M4.4 11.8V17c0 1.8 3.4 3.2 7.6 3.2s7.6-1.4 7.6-3.2v-5.2" fill="none" stroke="currentColor" stroke-width="1.9" opacity=".55"/>
         </svg>
       </span>
-      <span class="nav__label">Crypto</span>
     </a>
   </nav>
 
   <div class="sidebar__foot">
-    <button class="ghost-btn" id="theme-toggle" type="button" aria-label="Ganti tema">
-      <span class="ghost-btn__icon" aria-hidden="true">
+    <button class="icon-toggle" id="theme-toggle" type="button" data-tip="Ganti tema" aria-label="Ganti tema">
+      <span aria-hidden="true">
         <svg viewBox="0 0 24 24" class="icon-sun"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg>
         <svg viewBox="0 0 24 24" class="icon-moon"><path d="M20 14.4A8.6 8.6 0 0 1 9.6 4a8.6 8.6 0 1 0 10.4 10.4Z" fill="currentColor"/></svg>
       </span>
-      <span class="ghost-btn__label" id="theme-label">Tema gelap</span>
     </button>
-    <p class="sidebar__note">Data tersimpan di browser ini saja.</p>
   </div>
 </aside>
 
@@ -87,6 +78,10 @@
       <p class="topbar__sub" id="page-sub">Alokasi, rencana rebalance, dan pelacakan.</p>
     </div>
     <div class="topbar__actions">
+      <button class="pricepill" id="price-pill" type="button" aria-live="polite">
+        <span class="pricepill__dot" aria-hidden="true"></span>
+        <span class="pricepill__text" id="price-status">Harga manual</span>
+      </button>
       <span class="kurs">
         <label for="usd-rate">Kurs USD</label>
         <span class="kurs__field">Rp <input id="usd-rate" type="text" inputmode="numeric" value="16.300" aria-label="Kurs USD ke Rupiah"></span>
@@ -111,15 +106,16 @@
           <span class="field__input"><span class="field__prefix">Rp</span>
             <input id="new-money" type="text" inputmode="numeric" placeholder="0">
           </span>
-          <small>Uang segar yang akan dibagi ke aset yang bobotnya kurang.</small>
+          <small>Uang segar yang akan dibagi ke aset pilihanmu.</small>
         </div>
         <div class="field">
           <label for="mode">Metode</label>
           <select id="mode">
+            <option value="split">Bagi ke aset pilihan</option>
             <option value="nosell">Tanpa jual</option>
             <option value="full">Rebalance penuh</option>
           </select>
-          <small id="mode-note">Dana baru diarahkan ke aset yang paling tertinggal.</small>
+          <small id="mode-note">Kamu pilih asetnya, dananya dibagi ke situ.</small>
         </div>
         <div class="field">
           <label for="band">Toleransi drift</label>
@@ -137,6 +133,18 @@
           </div>
           <small>Per kelas berguna kalau asetmu sudah banyak.</small>
         </div>
+      </div>
+
+      <div class="allocbar" id="allocbar">
+        <div class="allocbar__text">
+          <strong id="allocbar-title">Pilih aset untuk dana barumu</strong>
+          <span id="allocbar-note">Masukkan nominal dulu, lalu pilih aset mana saja yang mau dibeli.</span>
+        </div>
+        <div class="allocbar__chips" id="allocbar-chips"></div>
+        <button class="btn btn--primary" type="button" id="open-alloc">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="btn__icon"><path d="M4 7h16M4 12h10M4 17h6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+          <span id="open-alloc-label">Pilih aset &amp; bagi</span>
+        </button>
       </div>
     </section>
 
@@ -187,8 +195,9 @@
           <thead>
             <tr>
               <th scope="col">Aset</th>
+              <th scope="col" class="num">Unit <span class="th-hint">opsional</span></th>
+              <th scope="col" class="num">Harga / unit</th>
               <th scope="col" class="num">Nilai sekarang</th>
-              <th scope="col" class="num">Harga / unit <span class="th-hint">opsional</span></th>
               <th scope="col" class="num">Target</th>
               <th scope="col" class="num">Bobot kini</th>
               <th scope="col"><span class="sr-only">Aksi</span></th>
@@ -231,6 +240,10 @@
         <h2 class="card__title" id="track-h">Pelacakan</h2>
         <div class="card__tools">
           <button class="btn btn--primary" type="button" id="btn-snapshot">Simpan snapshot</button>
+          <button class="btn btn--accent" type="button" id="btn-pdf">
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="btn__icon"><path d="M12 3.5v11m0 0 4-4m-4 4-4-4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" fill="none"/></svg>
+            Unduh PDF
+          </button>
           <button class="btn btn--quiet" type="button" id="btn-export">Ekspor JSON</button>
           <button class="btn btn--quiet" type="button" id="btn-import">Impor</button>
           <button class="btn btn--danger-quiet" type="button" id="btn-reset">Reset</button>
@@ -268,6 +281,7 @@
 
 <div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
 
+<!-- Asset picker -->
 <div class="modal" id="picker" hidden>
   <div class="modal__scrim" data-close></div>
   <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="picker-h">
@@ -299,10 +313,52 @@
   </div>
 </div>
 
+<!-- New-money allocation -->
+<div class="modal" id="alloc" hidden>
+  <div class="modal__scrim" data-close></div>
+  <div class="modal__panel modal__panel--alloc" role="dialog" aria-modal="true" aria-labelledby="alloc-h">
+    <div class="modal__head">
+      <div>
+        <h2 id="alloc-h">Bagi dana baru</h2>
+        <p class="modal__sub" id="alloc-sub"></p>
+      </div>
+      <button class="icon-btn" type="button" data-close aria-label="Tutup">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+      </button>
+    </div>
+
+    <div class="alloc__amount">
+      <label for="alloc-amount">Dana yang akan diinvestasikan</label>
+      <span class="field__input"><span class="field__prefix">Rp</span>
+        <input id="alloc-amount" type="text" inputmode="numeric" placeholder="0">
+      </span>
+    </div>
+
+    <div class="modal__search">
+      <svg viewBox="0 0 24 24" aria-hidden="true" class="modal__search-icon"><circle cx="11" cy="11" r="6.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.8 15.8 20.5 20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="alloc-search" type="search" placeholder="Cari aset yang mau dibeli…" autocomplete="off">
+    </div>
+    <div class="chips" id="alloc-chips"></div>
+
+    <div class="modal__list" id="alloc-list"></div>
+
+    <div class="alloc__foot">
+      <div class="alloc__sum" id="alloc-sum"></div>
+      <div class="alloc__actions">
+        <button class="btn btn--quiet" type="button" id="alloc-even">Bagi rata</button>
+        <button class="btn btn--quiet" type="button" id="alloc-clear">Kosongkan</button>
+        <button class="btn btn--primary" type="button" id="alloc-save">Simpan &amp; hitung</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="assets/js/brandmarks.js"></script>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/logos.js"></script>
 <script src="assets/js/charts.js"></script>
+<script src="assets/js/pdf.js"></script>
+<script src="assets/js/prices.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>
