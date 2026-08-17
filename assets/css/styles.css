@@ -208,6 +208,7 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
   pointer-events: none;
   transition: opacity .2s var(--ease);
 }
+.slice__icon { pointer-events: none; transition: opacity .2s var(--ease); }
 .pie__caption {
   margin-top: 16px;
   color: var(--muted); font-size: 13px; font-weight: 550;

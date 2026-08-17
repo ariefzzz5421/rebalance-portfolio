@@ -16,7 +16,10 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
    langsung di kolom namanya.
 3. **Atur porsinya** dalam persen. Setiap baris menampilkan nominalnya sendiri
    dan langsung tergambar sebagai potongan pie.
-4. Tombol bantunya:
+4. **Hapus** dengan tombol ✕ di ujung baris. Porsinya ikut terhapus — jatahnya
+   tidak dibagikan diam-diam ke baris lain, melainkan jadi sisa "Belum dibagi"
+   yang kamu tempatkan sendiri.
+5. Tombol bantunya:
    - **Tambah porsi** — bagian baru dapat jatah rata, yang lama menyusut
      proporsional, jadi totalnya tetap 100%.
    - **Bagi rata** — semua porsi disamakan.
@@ -24,6 +27,9 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
 
 Kalau jumlahnya belum 100%, sisanya muncul sebagai potongan abu-abu "Belum
 dibagi" dan lencana di kanan atas berubah warna. Lebih dari 100% juga ditandai.
+
+Setiap potongan pie menampilkan logo asetnya dan persennya, selama potongannya
+cukup lebar (logo butuh ruang lebih dari angkanya, jadi ambangnya lebih tinggi).
 
 ## Menyimpan hasilnya
 
@@ -82,13 +88,27 @@ disk, di mana browser menolak memuat berkas font terpisah.
 
 ## Logo
 
-Logo merek diambil dari [simple-icons](https://simple-icons.org) v16.28.0 yang
-dirilis di bawah CC0 1.0; path-nya disalin apa adanya. Aset yang tidak punya
-logo di sana memakai glyph buatan sendiri (indeks, emas batangan, kas,
-obligasi, Hyperliquid) atau petak monogram dua huruf — jadi bank-bank BEI dan
-beberapa emiten AS tampil sebagai inisial, bukan logo resminya. Nama dan logo
-merek adalah milik pemiliknya masing-masing dan dipakai di sini hanya untuk
-menandai aset.
+Semua logo di sini berasal dari sumber yang lisensinya jelas dan boleh
+didistribusikan ulang:
+
+| Sumber | Lisensi | Aset |
+|---|---|---|
+| [simple-icons](https://simple-icons.org) v16.28.0 | CC0 1.0 | AAPL, NVDA, GOOGL, META, TSLA, AVGO, V, UNVR, GOTO, BTC, ETH, SOL, USDT, BNB, XRP, DOGE |
+| [web3icons](https://github.com/0xa3k5/web3icons) v4.0.54 | MIT | XAUT, HYPE |
+| Digambar untuk proyek ini | — | glyph kelas aset + S&P 500, emas, kas, obligasi |
+
+**Yang tidak ada logo resminya.** Untuk 25 aset sisanya — bank-bank BEI seperti
+BBCA dan BBRI, lalu MSFT, AMZN, JPM, dan produk seperti VOO, QQQ, SBN, RDPU —
+tidak ada logo berlisensi terbuka yang tersedia. Logo mereka adalah merek
+dagang tanpa lisensi redistribusi, jadi menyalinnya dari situs masing-masing
+bukan pilihan yang bisa dipertanggungjawabkan untuk repo publik. Sebagai
+gantinya, tiap aset memakai **glyph kelasnya** — gedung untuk saham, tumpukan
+lapisan untuk ETF, koin untuk kripto, batangan untuk emas, sertifikat untuk
+obligasi, dompet untuk kas — diwarnai dengan warna merek asetnya. Jadi tiap
+potongan tetap menunjukkan jenis asetnya, bukan sekadar dua huruf.
+
+Nama dan logo merek adalah milik pemiliknya masing-masing dan dipakai di sini
+hanya untuk menandai aset.
 
 ## Warna
 

@@ -85,12 +85,43 @@
   /* ── Asset marks ────────────────────────────────────────────────────────── */
 
   const MARKS = window.MARKS || {};
-  const ALIASES = window.MARK_ALIASES || {};
+  const CLASS_MARKS = window.CLASS_MARKS || {};
 
-  /** The logo for a ticker: its own mark, a shared class glyph, or nothing. */
+  /** The logo for a ticker: its own brand mark, else its class glyph. */
   function markFor(ticker) {
     if (!ticker) return null;
-    return MARKS[ticker] || MARKS[ALIASES[ticker]] || null;
+    if (MARKS[ticker]) return MARKS[ticker];
+    const asset = window.assetByTicker(ticker);
+    return (asset && MARKS[CLASS_MARKS[asset.cls]]) || null;
+  }
+
+  /** Colour to paint a mark in: the asset's own brand beats a generic glyph. */
+  function brandOf(ticker) {
+    const asset = ticker ? window.assetByTicker(ticker) : null;
+    if (asset && asset.color) return asset.color;
+    const mark = markFor(ticker);
+    return (mark && mark.hex) || '#8b8981';
+  }
+
+  /** Append a mark's paths to an SVG node, honouring its fill rule. */
+  function paintMark(target, mark, color) {
+    for (const d of mark.d || []) {
+      const path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', color);
+      if (mark.rule) path.setAttribute('fill-rule', mark.rule);
+      target.appendChild(path);
+    }
+    for (const d of mark.sd || []) {
+      const path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', color);
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      target.appendChild(path);
+    }
   }
 
   const assetOf = (p) => (p && p.ticker ? window.assetByTicker(p.ticker) : null);
@@ -100,29 +131,13 @@
     const tile = document.createElement('span');
     tile.className = 'tile tile--' + (size || 'md');
     const mark = markFor(ticker);
-    const asset = ticker ? window.assetByTicker(ticker) : null;
-    tile.style.setProperty('--brand', (mark && mark.hex) || (asset && asset.color) || '#8b8981');
+    tile.style.setProperty('--brand', brandOf(ticker));
 
     if (mark) {
       const svg = document.createElementNS(SVG_NS, 'svg');
       svg.setAttribute('viewBox', '0 0 24 24');
       svg.setAttribute('aria-hidden', 'true');
-      for (const d of mark.d || []) {
-        const path = document.createElementNS(SVG_NS, 'path');
-        path.setAttribute('d', d);
-        path.setAttribute('fill', 'currentColor');
-        svg.appendChild(path);
-      }
-      for (const d of mark.sd || []) {
-        const path = document.createElementNS(SVG_NS, 'path');
-        path.setAttribute('d', d);
-        path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', 'currentColor');
-        path.setAttribute('stroke-width', '2');
-        path.setAttribute('stroke-linecap', 'round');
-        path.setAttribute('stroke-linejoin', 'round');
-        svg.appendChild(path);
-      }
+      paintMark(svg, mark, 'currentColor');
       tile.appendChild(svg);
     } else {
       const mono = document.createElement('span');
@@ -277,6 +292,7 @@
       .sort((a, b) => a.slot - b.slot)
       .map((p) => ({
         key: p.id,
+        ticker: p.ticker || null,
         label: p.ticker || p.name || 'Tanpa nama',
         pct: Number(p.pct) || 0,
         color: slotColor(p.slot),
@@ -335,16 +351,26 @@
         const path = document.createElementNS(SVG_NS, 'path');
         path.setAttribute('class', 'slice');
         path.setAttribute('tabindex', '0');
+        const icon = document.createElementNS(SVG_NS, 'g');
+        icon.setAttribute('class', 'slice__icon');
         const label = document.createElementNS(SVG_NS, 'text');
         label.setAttribute('class', 'slice__label');
         label.setAttribute('text-anchor', 'middle');
-        group.append(path, label);
+        group.append(path, icon, label);
         svg.appendChild(group);
-        entry = { group, path, label };
+        entry = { group, path, icon, label, markKey: undefined };
         host._paths.set(d.key, entry);
         bindSlice(entry, d.key);
       }
       entry.data = d;
+      /* Repaint the wedge's mark only when the asset behind it changed. */
+      const markKey = (d.ticker || '') + '|' + d.color;
+      if (entry.markKey !== markKey) {
+        entry.markKey = markKey;
+        entry.icon.textContent = '';
+        entry.mark = d.rest ? null : markFor(d.ticker);
+        if (entry.mark) paintMark(entry.icon, entry.mark, readable(d.color));
+      }
       entry.path.setAttribute('fill', d.color);
       entry.path.setAttribute('aria-label', `${d.label}: ${pctText(d.pct)}`);
       entry.path.classList.toggle('is-rest', !!d.rest);
@@ -364,14 +390,27 @@
         entry.a0 = a0;
         entry.a1 = a1;
 
-        /* Only label a slice wide enough to hold the text without crowding. */
+        /* A wedge only carries a mark and a number when it has room for them:
+           the logo needs more width than the text, so it has a higher bar. */
         const share = (value / Math.max(sum, 1e-9)) * 100;
         const mid = (a0 + a1) / 2;
-        const text = pctText(share);
+        const withIcon = share >= 13 && !!entry.mark;
+        const reach = withIcon ? 0.55 : 0.62;
+        const px = CX + Math.cos(mid) * R * reach;
+        const py = CY + Math.sin(mid) * R * reach;
+
+        if (withIcon) {
+          entry.icon.setAttribute('transform',
+            `translate(${px - 10} ${py - 18}) scale(${20 / 24})`);
+          entry.icon.style.opacity = '1';
+        } else {
+          entry.icon.style.opacity = '0';
+        }
+
         if (share >= 9 && !d.rest) {
-          entry.label.textContent = text;
-          entry.label.setAttribute('x', CX + Math.cos(mid) * R * 0.62);
-          entry.label.setAttribute('y', CY + Math.sin(mid) * R * 0.62 + 5);
+          entry.label.textContent = pctText(share);
+          entry.label.setAttribute('x', px);
+          entry.label.setAttribute('y', withIcon ? py + 16 : py + 5);
           entry.label.setAttribute('fill', readable(d.color));
           entry.label.style.opacity = '1';
         } else {
@@ -470,9 +509,12 @@
   function renderParts() {
     const host = $('#parts');
     const sig = state.parts.map((p) => p.id + ':' + (p.ticker || '')).join('|');
-    const focused = host.contains(document.activeElement);
+    /* Only a field being typed in blocks a rebuild — a focused button (say the
+       delete X) must not, or the row it just removed would stay on screen. */
+    const active = document.activeElement;
+    const typing = !!(active && active.dataset && active.dataset.field && host.contains(active));
 
-    if (sig !== signature && !focused) {
+    if (sig !== signature && !typing) {
       host.textContent = '';
       state.parts.forEach((p, i) => host.appendChild(partRow(p, i)));
       signature = sig;
@@ -591,17 +633,16 @@
     openPicker(state.parts[state.parts.length - 1].id);
   }
 
-  /** Removing gives the freed share back to the others, in proportion. */
+  /**
+   * Deleting takes the slice and its share with it. The freed percentage is
+   * left unassigned — it shows up as "Belum dibagi" for you to place yourself,
+   * rather than quietly inflating whatever happens to be left.
+   */
   function removePart(id) {
-    const gone = state.parts.find((p) => p.id === id);
-    if (!gone) return;
+    if (!state.parts.some((p) => p.id === id)) return;
+    /* The button is about to be removed; don't leave focus stranded on it. */
+    if (document.activeElement) document.activeElement.blur();
     state.parts = state.parts.filter((p) => p.id !== id);
-    const left = state.parts.reduce((s, p) => s + (Number(p.pct) || 0), 0);
-    if (left > 0 && gone.pct > 0) {
-      state.parts.forEach((p) => {
-        p.pct = round1((Number(p.pct) || 0) + ((Number(p.pct) || 0) / left) * gone.pct);
-      });
-    }
     signature = '';
     render();
   }
@@ -766,7 +807,8 @@
         color: d.color,
         ink: readable(d.color),
         mark: part ? markFor(part.ticker) : null,
-        brand: asset ? asset.color : d.color,
+        brand: part ? brandOf(part.ticker) : d.color,
+        rest: !!d.rest,
       };
     });
   }

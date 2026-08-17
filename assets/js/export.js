@@ -39,9 +39,24 @@ window.Exporter = (function () {
     ctx.closePath();
   }
 
+  /** Paint a 24×24 mark at (x, y) scaled to `size`, in a single colour. */
+  function drawMark(ctx, mark, x, y, size, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(size / 24, size / 24);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    for (const d of mark.d || []) ctx.fill(new Path2D(d), mark.rule === 'evenodd' ? 'evenodd' : 'nonzero');
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    for (const d of mark.sd || []) ctx.stroke(new Path2D(d));
+    ctx.restore();
+  }
+
   /** Draw a 24×24 mark (or a monogram) inside a rounded tile. */
   function drawTile(ctx, spec, x, y, size) {
-    const { mark, color, ticker, surface } = spec;
+    const { mark, color, ticker, surface, rest } = spec;
     const brand = (mark && mark.hex) || color || '#8b8981';
     ctx.save();
     roundRect(ctx, x, y, size, size, size * 0.28);
@@ -52,15 +67,9 @@ window.Exporter = (function () {
     ctx.strokeStyle = brand;
     if (mark) {
       const inner = size * 0.58;
-      ctx.save();
-      ctx.translate(x + (size - inner) / 2, y + (size - inner) / 2);
-      ctx.scale(inner / 24, inner / 24);
-      for (const d of mark.d || []) ctx.fill(new Path2D(d));
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      for (const d of mark.sd || []) ctx.stroke(new Path2D(d));
-      ctx.restore();
+      drawMark(ctx, mark, x + (size - inner) / 2, y + (size - inner) / 2, inner, brand);
+    } else if (rest) {
+      /* The unassigned remainder isn't an asset — leave the tile blank. */
     } else {
       ctx.font = `700 ${Math.round(size * 0.4)}px "Bricolage Grotesque", system-ui, sans-serif`;
       ctx.textAlign = 'center';
@@ -145,13 +154,20 @@ window.Exporter = (function () {
       ctx.fillStyle = d.color;
       ctx.fill();
 
-      if (d.pct / sum >= 0.09) {
-        const mid = a + sweep / 2;
+      const share = d.pct / sum;
+      const withIcon = share >= 0.13 && !!d.mark;
+      const mid = a + sweep / 2;
+      const reach = withIcon ? 0.55 : 0.62;
+      const px = cx + Math.cos(mid) * r * reach;
+      const py = cy + Math.sin(mid) * r * reach;
+
+      if (withIcon) drawMark(ctx, d.mark, px - 19, py - 34, 38, d.ink);
+      if (share >= 0.09) {
         ctx.fillStyle = d.ink;
         ctx.font = font(700, 26);
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(d.pctText, cx + Math.cos(mid) * r * 0.62, cy + Math.sin(mid) * r * 0.62);
+        ctx.fillText(d.pctText, px, withIcon ? py + 16 : py);
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
       }
@@ -161,7 +177,7 @@ window.Exporter = (function () {
     /* Legend rows */
     let y = headH + pieBox + 40;
     for (const d of rows) {
-      drawTile(ctx, { mark: d.mark, color: d.brand, ticker: d.label, surface: t.surface }, PAD, y + 8, 52);
+      drawTile(ctx, { mark: d.mark, color: d.brand, ticker: d.label, surface: t.surface, rest: d.rest }, PAD, y + 8, 52);
 
       ctx.fillStyle = t.ink;
       ctx.font = font(700, 27);

@@ -87,9 +87,18 @@ window.classById = function (id) {
   return window.ASSET_CLASSES.find((c) => c.id === id) || null;
 };
 
-/* Bond and cash glyphs are shared across every asset in those classes. */
-window.MARK_ALIASES = {
-  SBN: 'BOND', FR: 'BOND', RDPT: 'BOND',
-  CASH: 'CASH', DEPO: 'CASH', RDPU: 'CASH',
-  GLD: 'GOLD',
+/**
+ * Fallback glyph per class, used when an asset has no brand mark of its own.
+ * Only a handful of issuers publish an openly licensed logo, so most rows lean
+ * on these — a slice then still says "this is a share / a fund / gold" rather
+ * than showing two letters.
+ */
+window.CLASS_MARKS = {
+  idx: 'CLS_STOCK',
+  us: 'CLS_STOCK',
+  etf: 'CLS_ETF',
+  crypto: 'CLS_CRYPTO',
+  gold: 'GOLD',
+  bond: 'BOND',
+  cash: 'CASH',
 };
