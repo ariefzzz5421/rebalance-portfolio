@@ -103,8 +103,17 @@
     return (mark && mark.hex) || '#8b8981';
   }
 
-  /** Append a mark's paths to an SVG node, honouring its fill rule. */
+  /**
+   * Append a mark's paths to an SVG node.
+   * @param color  a single ink, or null to let a polychrome mark keep its own.
+   */
   function paintMark(target, mark, color) {
+    for (const part of mark.poly || []) {
+      const path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', part.d);
+      path.setAttribute('fill', color || part.fill);
+      target.appendChild(path);
+    }
     for (const d of mark.d || []) {
       const path = document.createElementNS(SVG_NS, 'path');
       path.setAttribute('d', d);
@@ -135,9 +144,11 @@
 
     if (mark) {
       const svg = document.createElementNS(SVG_NS, 'svg');
-      svg.setAttribute('viewBox', '0 0 24 24');
+      const vb = mark.vb || 24;
+      svg.setAttribute('viewBox', `0 0 ${vb} ${vb}`);
       svg.setAttribute('aria-hidden', 'true');
-      paintMark(svg, mark, 'currentColor');
+      /* A polychrome logo keeps its real colours; monochrome marks take the tile ink. */
+      paintMark(svg, mark, mark.poly ? null : 'currentColor');
       tile.appendChild(svg);
     } else {
       const mono = document.createElement('span');
@@ -240,6 +251,16 @@
 
   const round1 = (v) => Math.round(v * 10) / 10;
 
+  /**
+   * Biggest slice first. Called at the moments a share settles — never while a
+   * field is being typed in, or rows would jump under the cursor mid-keystroke.
+   * Sort is stable, so equal shares keep the order they were added in.
+   */
+  function sortParts() {
+    state.parts.sort((a, b) => (Number(b.pct) || 0) - (Number(a.pct) || 0));
+    signature = '';
+  }
+
   /* ── Pie ────────────────────────────────────────────────────────────────── */
 
   const R = 104, CX = 120, CY = 120, TAU = Math.PI * 2;
@@ -289,7 +310,7 @@
     const out = state.parts
       .filter((p) => (Number(p.pct) || 0) > 0)
       .slice()
-      .sort((a, b) => a.slot - b.slot)
+      .sort((a, b) => (Number(b.pct) || 0) - (Number(a.pct) || 0))
       .map((p) => ({
         key: p.id,
         ticker: p.ticker || null,
@@ -370,6 +391,7 @@
         entry.icon.textContent = '';
         entry.mark = d.rest ? null : markFor(d.ticker);
         if (entry.mark) paintMark(entry.icon, entry.mark, readable(d.color));
+        entry.markScale = 20 / (entry.mark ? entry.mark.vb || 24 : 24);
       }
       entry.path.setAttribute('fill', d.color);
       entry.path.setAttribute('aria-label', `${d.label}: ${pctText(d.pct)}`);
@@ -401,7 +423,7 @@
 
         if (withIcon) {
           entry.icon.setAttribute('transform',
-            `translate(${px - 10} ${py - 18}) scale(${20 / 24})`);
+            `translate(${px - 10} ${py - 18}) scale(${entry.markScale})`);
           entry.icon.style.opacity = '1';
         } else {
           entry.icon.style.opacity = '0';
@@ -627,10 +649,11 @@
     const keep = 1 - share / 100;
     state.parts.forEach((p) => { p.pct = round1((Number(p.pct) || 0) * keep); });
     state.parts.push({ id: uid(), ticker: null, name: '', pct: round1(share), slot: nextSlot() });
-    signature = '';
+    const added = state.parts[state.parts.length - 1];
+    sortParts();
     render();
     /* Straight into the picker — choosing the asset is the point. */
-    openPicker(state.parts[state.parts.length - 1].id);
+    openPicker(added.id);
   }
 
   /**
@@ -652,7 +675,7 @@
     const each = round1(100 / state.parts.length);
     state.parts.forEach((p) => { p.pct = each; });
     fixRounding();
-    signature = '';
+    sortParts();
     render();
   }
 
@@ -661,7 +684,7 @@
     if (!state.parts.length || sum <= 0) return splitEvenly();
     state.parts.forEach((p) => { p.pct = round1(((Number(p.pct) || 0) / sum) * 100); });
     fixRounding();
-    signature = '';
+    sortParts();
     render();
   }
 
@@ -795,7 +818,12 @@
   /* ── Export ─────────────────────────────────────────────────────────────── */
 
   function exportSlices() {
-    return slices().map((d) => {
+    const list = slices();
+    /* A wedge's width is its share of the circle, which only equals the typed
+       percentage when the parts add up to 100. Label it with what it actually
+       shows; the legend row keeps the number the user entered. */
+    const sum = list.reduce((s, d) => s + d.pct, 0) || 1;
+    return list.map((d) => {
       const part = state.parts.find((p) => p.id === d.key);
       const asset = part ? assetOf(part) : null;
       return {
@@ -803,6 +831,7 @@
         sub: asset ? asset.name : (d.rest ? 'sisa yang belum dibagi' : ''),
         pct: d.pct,
         pctText: pctText(d.pct),
+        pieText: pctText((d.pct / sum) * 100),
         amountText: money((state.total * d.pct) / 100),
         color: d.color,
         ink: readable(d.color),
@@ -961,8 +990,12 @@
       if (pick) openPicker(pick.dataset.pick);
     });
     parts.addEventListener('blur', (e) => {
-      /* Rebuilding is deferred while an input has focus; do it once it leaves. */
-      if (e.target.dataset && e.target.dataset.field) setTimeout(render, 0);
+      const field = e.target.dataset && e.target.dataset.field;
+      if (!field) return;
+      /* Rebuilding is deferred while an input has focus; do it once it leaves —
+         and that is also the moment a changed share may reorder the list. */
+      if (field === 'pct') sortParts();
+      setTimeout(render, 0);
     }, true);
 
     $('#add').addEventListener('click', addPart);

@@ -39,13 +39,21 @@ window.Exporter = (function () {
     ctx.closePath();
   }
 
-  /** Paint a 24×24 mark at (x, y) scaled to `size`, in a single colour. */
+  /**
+   * Paint a mark at (x, y) scaled to `size`.
+   * @param color  a single ink, or null to let a polychrome mark keep its own.
+   */
   function drawMark(ctx, mark, x, y, size, color) {
+    const vb = mark.vb || 24;
     ctx.save();
     ctx.translate(x, y);
-    ctx.scale(size / 24, size / 24);
-    ctx.fillStyle = color;
-    ctx.strokeStyle = color;
+    ctx.scale(size / vb, size / vb);
+    for (const part of mark.poly || []) {
+      ctx.fillStyle = color || part.fill;
+      ctx.fill(new Path2D(part.d));
+    }
+    ctx.fillStyle = color || mark.hex;
+    ctx.strokeStyle = color || mark.hex;
     for (const d of mark.d || []) ctx.fill(new Path2D(d), mark.rule === 'evenodd' ? 'evenodd' : 'nonzero');
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
@@ -67,7 +75,8 @@ window.Exporter = (function () {
     ctx.strokeStyle = brand;
     if (mark) {
       const inner = size * 0.58;
-      drawMark(ctx, mark, x + (size - inner) / 2, y + (size - inner) / 2, inner, brand);
+      drawMark(ctx, mark, x + (size - inner) / 2, y + (size - inner) / 2, inner,
+        mark.poly ? null : brand);
     } else if (rest) {
       /* The unassigned remainder isn't an asset — leave the tile blank. */
     } else {
@@ -167,7 +176,7 @@ window.Exporter = (function () {
         ctx.font = font(700, 26);
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(d.pctText, px, withIcon ? py + 16 : py);
+        ctx.fillText(d.pieText || d.pctText, px, withIcon ? py + 16 : py);
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
       }

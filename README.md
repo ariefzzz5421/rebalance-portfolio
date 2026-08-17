@@ -28,6 +28,11 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
 Kalau jumlahnya belum 100%, sisanya muncul sebagai potongan abu-abu "Belum
 dibagi" dan lencana di kanan atas berubah warna. Lebih dari 100% juga ditandai.
 
+Daftarnya **urut otomatis dari porsi terbesar ke terkecil**, begitu juga urutan
+potongan di pie chart dan di file unduhan. Urutannya baru disusun ulang saat
+angkanya selesai diketik, bukan tiap ketukan tombol — jadi barisnya tidak
+melompat di bawah kursormu.
+
 Setiap potongan pie menampilkan logo asetnya dan persennya, selama potongannya
 cukup lebar (logo butuh ruang lebih dari angkanya, jadi ambangnya lebih tinggi).
 
@@ -95,10 +100,11 @@ didistribusikan ulang:
 |---|---|---|
 | [simple-icons](https://simple-icons.org) v16.28.0 | CC0 1.0 | AAPL, NVDA, GOOGL, META, TSLA, AVGO, V, UNVR, GOTO, BTC, ETH, SOL, USDT, BNB, XRP, DOGE |
 | [web3icons](https://github.com/0xa3k5/web3icons) v4.0.54 | MIT | XAUT, HYPE |
+| [SVG Logos](https://github.com/gilbarbara/logos) v1.2.13 | CC0 1.0 | MSFT (berwarna penuh) |
 | Digambar untuk proyek ini | — | glyph kelas aset + S&P 500, emas, kas, obligasi |
 
-**Yang tidak ada logo resminya.** Untuk 25 aset sisanya — bank-bank BEI seperti
-BBCA dan BBRI, lalu MSFT, AMZN, JPM, dan produk seperti VOO, QQQ, SBN, RDPU —
+**Yang tidak ada logo resminya.** Untuk 24 aset sisanya — bank-bank BEI seperti
+BBCA dan BBRI, lalu AMZN, JPM, dan produk seperti VOO, QQQ, SBN, RDPU —
 tidak ada logo berlisensi terbuka yang tersedia. Logo mereka adalah merek
 dagang tanpa lisensi redistribusi, jadi menyalinnya dari situs masing-masing
 bukan pilihan yang bisa dipertanggungjawabkan untuk repo publik. Sebagai
