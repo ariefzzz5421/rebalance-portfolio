@@ -9,9 +9,14 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
 ## Cara pakai
 
 1. **Isi uang yang kamu punya** di kolom besar paling atas.
-2. **Atur porsinya** dalam persen. Setiap baris menampilkan nominalnya sendiri
+2. **Pilih asetnya** — klik logo di kiri tiap baris untuk membuka katalog: saham
+   Indonesia, saham Amerika, ETF & indeks, kripto, emas, obligasi, dan kas.
+   Tiap aset punya ticker, nama lengkap, dan logonya. Mau nama sendiri
+   (misal "Dana darurat")? Ada tombol **Pakai nama sendiri**, atau ketik
+   langsung di kolom namanya.
+3. **Atur porsinya** dalam persen. Setiap baris menampilkan nominalnya sendiri
    dan langsung tergambar sebagai potongan pie.
-3. Tombol bantunya:
+4. Tombol bantunya:
    - **Tambah porsi** — bagian baru dapat jatah rata, yang lama menyusut
      proporsional, jadi totalnya tetap 100%.
    - **Bagi rata** — semua porsi disamakan.
@@ -19,6 +24,15 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
 
 Kalau jumlahnya belum 100%, sisanya muncul sebagai potongan abu-abu "Belum
 dibagi" dan lencana di kanan atas berubah warna. Lebih dari 100% juga ditandai.
+
+## Menyimpan hasilnya
+
+Panel **Simpan setup ini** di bawah mengunduh susunanmu sebagai **JPG** atau
+**PDF**: kartu berisi total, pie chart, dan rincian tiap porsi lengkap dengan
+logo, ticker, nominal, dan persennya. Kartunya mengikuti tema yang sedang
+aktif, digambar ulang di canvas pada resolusi 2× supaya tetap tajam saat
+dicetak atau dibagikan. PDF-nya satu halaman berisi gambar yang sama, jadi apa
+yang kamu lihat persis itu yang tersimpan.
 
 ## Mata uang
 
@@ -48,6 +62,9 @@ Deploy ke hosting statis mana pun tanpa langkah build.
 index.html               kerangka halaman
 assets/css/font.css      Bricolage Grotesque, tertanam sebagai data URI
 assets/css/styles.css    seluruh style, tema gelap & terang
+assets/js/marks.js       path logo aset (simple-icons + glyph buatan sendiri)
+assets/js/assets.js      katalog aset: ticker, nama, kelas
+assets/js/export.js      penggambar kartu di canvas → JPG / PDF
 assets/js/app.js         state, perhitungan, pie chart, pengaturan
 assets/fonts/            lisensi font
 ```
@@ -62,6 +79,16 @@ grotesque bersumbu variabel (200–800), dirilis di bawah SIL Open Font License
 1.1 (lihat `assets/fonts/`). Subset latin-nya ditanam sebagai data URI di
 `font.css` supaya tipografinya tetap utuh walau halaman dibuka langsung dari
 disk, di mana browser menolak memuat berkas font terpisah.
+
+## Logo
+
+Logo merek diambil dari [simple-icons](https://simple-icons.org) v16.28.0 yang
+dirilis di bawah CC0 1.0; path-nya disalin apa adanya. Aset yang tidak punya
+logo di sana memakai glyph buatan sendiri (indeks, emas batangan, kas,
+obligasi, Hyperliquid) atau petak monogram dua huruf — jadi bank-bank BEI dan
+beberapa emiten AS tampil sebagai inisial, bukan logo resminya. Nama dan logo
+merek adalah milik pemiliknya masing-masing dan dipakai di sini hanya untuk
+menandai aset.
 
 ## Warna
 

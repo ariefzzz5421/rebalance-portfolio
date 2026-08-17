@@ -82,6 +82,58 @@
   const slotColor = (slot) => SERIES[theme()][(slot - 1) % 8];
   const restColor = () => (theme() === 'light' ? '#d9d8d0' : '#33332f');
 
+  /* ── Asset marks ────────────────────────────────────────────────────────── */
+
+  const MARKS = window.MARKS || {};
+  const ALIASES = window.MARK_ALIASES || {};
+
+  /** The logo for a ticker: its own mark, a shared class glyph, or nothing. */
+  function markFor(ticker) {
+    if (!ticker) return null;
+    return MARKS[ticker] || MARKS[ALIASES[ticker]] || null;
+  }
+
+  const assetOf = (p) => (p && p.ticker ? window.assetByTicker(p.ticker) : null);
+
+  /** Rounded tile holding a brand mark, a drawn glyph, or a two-letter monogram. */
+  function tileEl(ticker, label, size) {
+    const tile = document.createElement('span');
+    tile.className = 'tile tile--' + (size || 'md');
+    const mark = markFor(ticker);
+    const asset = ticker ? window.assetByTicker(ticker) : null;
+    tile.style.setProperty('--brand', (mark && mark.hex) || (asset && asset.color) || '#8b8981');
+
+    if (mark) {
+      const svg = document.createElementNS(SVG_NS, 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('aria-hidden', 'true');
+      for (const d of mark.d || []) {
+        const path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('fill', 'currentColor');
+        svg.appendChild(path);
+      }
+      for (const d of mark.sd || []) {
+        const path = document.createElementNS(SVG_NS, 'path');
+        path.setAttribute('d', d);
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke', 'currentColor');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(path);
+      }
+      tile.appendChild(svg);
+    } else {
+      const mono = document.createElement('span');
+      mono.className = 'tile__mono';
+      mono.textContent = String(label || ticker || '?')
+        .replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?';
+      tile.appendChild(mono);
+    }
+    return tile;
+  }
+
   /* ── State ──────────────────────────────────────────────────────────────── */
 
   const uid = () => 'p' + Math.random().toString(36).slice(2, 8);
@@ -91,10 +143,10 @@
     total: 0,
     theme: 'dark',
     parts: [
-      { id: uid(), name: 'Saham', pct: 40, slot: 1 },
-      { id: uid(), name: 'Kripto', pct: 25, slot: 2 },
-      { id: uid(), name: 'Emas', pct: 20, slot: 3 },
-      { id: uid(), name: 'Kas', pct: 15, slot: 4 },
+      { id: uid(), ticker: 'BBCA', name: 'BBCA', pct: 40, slot: 1 },
+      { id: uid(), ticker: 'BTC', name: 'BTC', pct: 25, slot: 2 },
+      { id: uid(), ticker: 'GOLD', name: 'GOLD', pct: 20, slot: 3 },
+      { id: uid(), ticker: 'CASH', name: 'CASH', pct: 15, slot: 4 },
     ],
   });
 
@@ -225,7 +277,7 @@
       .sort((a, b) => a.slot - b.slot)
       .map((p) => ({
         key: p.id,
-        label: p.name || 'Tanpa nama',
+        label: p.ticker || p.name || 'Tanpa nama',
         pct: Number(p.pct) || 0,
         color: slotColor(p.slot),
       }));
@@ -417,7 +469,7 @@
 
   function renderParts() {
     const host = $('#parts');
-    const sig = state.parts.map((p) => p.id).join('|');
+    const sig = state.parts.map((p) => p.id + ':' + (p.ticker || '')).join('|');
     const focused = host.contains(document.activeElement);
 
     if (sig !== signature && !focused) {
@@ -429,7 +481,7 @@
     for (const p of state.parts) {
       const row = host.querySelector(`.part[data-id="${p.id}"]`);
       if (!row) continue;
-      row.querySelector('.part__dot').style.background = slotColor(p.slot);
+      row.querySelector('.part__logo').style.setProperty('--slice', slotColor(p.slot));
       row.querySelector('.part__amount').textContent = money(amountOf(p));
     }
 
@@ -448,18 +500,30 @@
     row.dataset.id = p.id;
     row.style.setProperty('--i', index);
 
-    const dot = document.createElement('span');
-    dot.className = 'part__dot';
-    dot.style.background = slotColor(p.slot);
+    const asset = assetOf(p);
 
+    const logo = document.createElement('button');
+    logo.type = 'button';
+    logo.className = 'part__logo';
+    logo.dataset.pick = p.id;
+    logo.style.setProperty('--slice', slotColor(p.slot));
+    logo.setAttribute('aria-label', `Pilih aset untuk ${p.ticker || p.name || 'porsi ini'}`);
+    logo.appendChild(tileEl(p.ticker, p.name, 'md'));
+
+    const ident = document.createElement('span');
+    ident.className = 'part__ident';
     const name = document.createElement('input');
     name.className = 'part__name';
     name.type = 'text';
-    name.value = p.name;
+    name.value = p.ticker || p.name;
     name.placeholder = 'Nama porsi';
     name.maxLength = 28;
     name.dataset.field = 'name';
-    name.setAttribute('aria-label', 'Nama porsi');
+    name.setAttribute('aria-label', 'Nama atau ticker porsi');
+    const sub = document.createElement('small');
+    sub.className = 'part__sub';
+    sub.textContent = asset ? asset.name : '';
+    ident.append(name, sub);
 
     const pctWrap = document.createElement('span');
     pctWrap.className = 'part__pct';
@@ -485,7 +549,7 @@
     del.setAttribute('aria-label', `Hapus ${p.name || 'porsi'}`);
     del.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>';
 
-    row.append(dot, name, pctWrap, amount, del);
+    row.append(logo, ident, pctWrap, amount, del);
     return row;
   }
 
@@ -520,11 +584,11 @@
     const share = 100 / (state.parts.length + 1);
     const keep = 1 - share / 100;
     state.parts.forEach((p) => { p.pct = round1((Number(p.pct) || 0) * keep); });
-    state.parts.push({ id: uid(), name: '', pct: round1(share), slot: nextSlot() });
+    state.parts.push({ id: uid(), ticker: null, name: '', pct: round1(share), slot: nextSlot() });
     signature = '';
     render();
-    const row = $(`.part[data-id="${state.parts[state.parts.length - 1].id}"]`);
-    if (row) row.querySelector('.part__name').focus();
+    /* Straight into the picker — choosing the asset is the point. */
+    openPicker(state.parts[state.parts.length - 1].id);
   }
 
   /** Removing gives the freed share back to the others, in proportion. */
@@ -567,6 +631,179 @@
     if (!drift || !state.parts.length) return;
     const biggest = state.parts.reduce((a, b) => ((a.pct || 0) >= (b.pct || 0) ? a : b));
     biggest.pct = Math.max(0, round1((biggest.pct || 0) + drift));
+  }
+
+  /* ── Asset picker ───────────────────────────────────────────────────────── */
+
+  const pickUI = { partId: null, q: '', cls: 'all' };
+
+  function openPicker(partId) {
+    pickUI.partId = partId;
+    pickUI.q = '';
+    $('#pick-search').value = '';
+    const sheet = $('#picker');
+    sheet.hidden = false;
+    document.body.classList.add('locked');
+    requestAnimationFrame(() => sheet.classList.add('on'));
+    renderPickChips();
+    renderPickList();
+    $('#pick-search').focus();
+  }
+
+  function closePicker() {
+    const sheet = $('#picker');
+    sheet.classList.remove('on');
+    document.body.classList.remove('locked');
+    setTimeout(() => { sheet.hidden = true; }, 200);
+  }
+
+  function renderPickChips() {
+    const host = $('#pick-chips');
+    if (host.dataset.built) return;
+    host.dataset.built = '1';
+    const opts = [{ id: 'all', label: 'Semua' }]
+      .concat(window.ASSET_CLASSES.map((c) => ({ id: c.id, label: c.label })));
+    for (const o of opts) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pickchip' + (pickUI.cls === o.id ? ' is-on' : '');
+      b.textContent = o.label;
+      b.addEventListener('click', () => {
+        pickUI.cls = o.id;
+        $$('.pickchip', host).forEach((c) => c.classList.toggle('is-on', c === b));
+        renderPickList();
+      });
+      host.appendChild(b);
+    }
+  }
+
+  function renderPickList() {
+    const host = $('#pick-list');
+    host.textContent = '';
+    const q = pickUI.q.trim().toLowerCase();
+    const taken = new Set(state.parts
+      .filter((p) => p.id !== pickUI.partId && p.ticker)
+      .map((p) => p.ticker));
+
+    const list = window.ASSETS.filter((a) =>
+      (pickUI.cls === 'all' || a.cls === pickUI.cls) &&
+      (!q || a.ticker.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)));
+
+    if (!list.length) {
+      const empty = document.createElement('p');
+      empty.className = 'parts__empty';
+      empty.textContent = 'Tidak ketemu. Coba kata kunci lain, atau pakai nama sendiri.';
+      host.appendChild(empty);
+      return;
+    }
+
+    let currentClass = null;
+    for (const a of list) {
+      if (pickUI.cls === 'all' && a.cls !== currentClass) {
+        currentClass = a.cls;
+        const head = document.createElement('p');
+        head.className = 'picklist__group';
+        head.textContent = window.classById(a.cls).label;
+        host.appendChild(head);
+      }
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'pickrow' + (taken.has(a.ticker) ? ' is-taken' : '');
+      row.dataset.choose = a.ticker;
+      row.appendChild(tileEl(a.ticker, a.ticker, 'md'));
+
+      const text = document.createElement('span');
+      text.className = 'pickrow__text';
+      const tk = document.createElement('strong');
+      tk.textContent = a.ticker;
+      const nm = document.createElement('small');
+      nm.textContent = a.name;
+      text.append(tk, nm);
+
+      const tag = document.createElement('span');
+      tag.className = 'pickrow__tag';
+      tag.textContent = taken.has(a.ticker) ? 'sudah dipakai' : window.classById(a.cls).short;
+
+      row.append(text, tag);
+      host.appendChild(row);
+    }
+  }
+
+  function choosePart(ticker) {
+    const p = state.parts.find((x) => x.id === pickUI.partId);
+    if (!p) return closePicker();
+    p.ticker = ticker;
+    p.name = ticker;
+    signature = '';
+    render();
+    closePicker();
+  }
+
+  function useCustomName() {
+    const p = state.parts.find((x) => x.id === pickUI.partId);
+    if (p) {
+      p.ticker = null;
+      signature = '';
+      render();
+    }
+    closePicker();
+    const row = p && $(`.part[data-id="${p.id}"]`);
+    if (row) row.querySelector('.part__name').focus();
+  }
+
+  /* ── Export ─────────────────────────────────────────────────────────────── */
+
+  function exportSlices() {
+    return slices().map((d) => {
+      const part = state.parts.find((p) => p.id === d.key);
+      const asset = part ? assetOf(part) : null;
+      return {
+        label: d.label,
+        sub: asset ? asset.name : (d.rest ? 'sisa yang belum dibagi' : ''),
+        pct: d.pct,
+        pctText: pctText(d.pct),
+        amountText: money((state.total * d.pct) / 100),
+        color: d.color,
+        ink: readable(d.color),
+        mark: part ? markFor(part.ticker) : null,
+        brand: asset ? asset.color : d.color,
+      };
+    });
+  }
+
+  async function saveAs(format, button) {
+    const rows = exportSlices();
+    if (!rows.length) return;
+    const css = getComputedStyle(document.documentElement);
+    const token = (name) => css.getPropertyValue(name).trim();
+
+    /* Hold the original children so the icon survives the progress label. */
+    const original = Array.from(button.childNodes);
+    button.disabled = true;
+    button.textContent = 'Menyimpan…';
+    try {
+      await window.Exporter.save({
+        title: 'Porsi',
+        totalLabel: 'Uang yang kamu punya',
+        totalText: money(state.total),
+        generatedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        footer: 'Dibuat dengan Porsi — kalkulator alokasi, bukan nasihat investasi.',
+        theme: {
+          surface: token('--surface') || '#1a1a19',
+          ink: token('--ink') || '#ffffff',
+          muted: token('--muted') || '#8b8981',
+          line: token('--line') || 'rgba(255,255,255,.1)',
+        },
+        slices: rows,
+      }, format);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menyimpan: ' + (err && err.message));
+    } finally {
+      button.disabled = false;
+      button.textContent = '';
+      original.forEach((node) => button.appendChild(node));
+    }
   }
 
   /* ── Settings ───────────────────────────────────────────────────────────── */
@@ -664,13 +901,22 @@
       const row = e.target.closest('.part');
       const p = state.parts.find((x) => x.id === row.dataset.id);
       if (!p) return;
-      if (field === 'name') p.name = e.target.value;
-      else p.pct = Math.min(1000, parseNum(e.target.value));
+      if (field === 'name') {
+        /* Hand-typing an identity means this slice is no longer that asset. */
+        p.name = e.target.value;
+        if (p.ticker && e.target.value !== p.ticker) {
+          p.ticker = null;
+          const sub = e.target.closest('.part').querySelector('.part__sub');
+          if (sub) sub.textContent = '';
+        }
+      } else p.pct = Math.min(1000, parseNum(e.target.value));
       render();
     });
     parts.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-remove]');
-      if (btn) removePart(btn.dataset.remove);
+      const remove = e.target.closest('[data-remove]');
+      if (remove) return removePart(remove.dataset.remove);
+      const pick = e.target.closest('[data-pick]');
+      if (pick) openPicker(pick.dataset.pick);
     });
     parts.addEventListener('blur', (e) => {
       /* Rebuilding is deferred while an input has focus; do it once it leaves. */
@@ -685,8 +931,26 @@
     $('#ccy-chip').addEventListener('click', openSheet);
     $$('#settings [data-close]').forEach((b) => b.addEventListener('click', closeSheet));
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !$('#settings').hidden) closeSheet();
+      if (e.key !== 'Escape') return;
+      if (!$('#picker').hidden) closePicker();
+      else if (!$('#settings').hidden) closeSheet();
     });
+
+    /* Asset picker */
+    $$('#picker [data-close]').forEach((b) => b.addEventListener('click', closePicker));
+    $('#pick-search').addEventListener('input', (e) => {
+      pickUI.q = e.target.value;
+      renderPickList();
+    });
+    $('#pick-list').addEventListener('click', (e) => {
+      const row = e.target.closest('[data-choose]');
+      if (row) choosePart(row.dataset.choose);
+    });
+    $('#pick-custom').addEventListener('click', useCustomName);
+
+    /* Download */
+    $('#dl-jpg').addEventListener('click', (e) => saveAs('jpg', e.currentTarget));
+    $('#dl-pdf').addEventListener('click', (e) => saveAs('pdf', e.currentTarget));
     $('#ccy-options').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-currency]');
       if (btn) setCurrency(btn.dataset.currency);

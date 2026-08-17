@@ -64,6 +64,23 @@
       </div>
     </div>
   </section>
+
+  <section class="export">
+    <div class="export__text">
+      <strong>Simpan setup ini</strong>
+      <span>Unduh sebagai gambar atau PDF — lengkap dengan pie dan rinciannya.</span>
+    </div>
+    <div class="export__actions">
+      <button class="btn" type="button" id="dl-jpg">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.6" fill="currentColor"/><path d="M4.5 16.5 9.5 12l3.5 3 2.5-2 4 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        JPG
+      </button>
+      <button class="btn btn--main" type="button" id="dl-pdf">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+        PDF
+      </button>
+    </div>
+  </section>
 </main>
 
 <div class="sheet" id="settings" hidden>
@@ -101,6 +118,31 @@
   </div>
 </div>
 
+<div class="sheet" id="picker" hidden>
+  <div class="sheet__scrim" data-close></div>
+  <div class="sheet__panel sheet__panel--picker" role="dialog" aria-modal="true" aria-labelledby="picker-h">
+    <div class="sheet__head">
+      <h2 id="picker-h">Pilih aset</h2>
+      <button class="gear gear--sm" type="button" data-close aria-label="Tutup">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+      </button>
+    </div>
+
+    <div class="pickbar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.8 15.8 20.5 20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="pick-search" type="search" placeholder="Cari ticker atau nama — BBCA, NVDA, BTC…" autocomplete="off">
+    </div>
+    <div class="pickchips" id="pick-chips"></div>
+    <div class="picklist" id="pick-list"></div>
+    <div class="pickfoot">
+      <button class="btn" type="button" id="pick-custom">Pakai nama sendiri</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/marks.js"></script>
+<script src="assets/js/assets.js"></script>
+<script src="assets/js/export.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>

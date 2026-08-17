@@ -234,7 +234,7 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
 .parts { display: flex; flex-direction: column; gap: 6px; }
 .part {
   display: grid;
-  grid-template-columns: 12px minmax(0, 1fr) 84px minmax(84px, auto) 32px;
+  grid-template-columns: 44px minmax(0, 1fr) 84px minmax(84px, auto) 32px;
   align-items: center; gap: 10px;
   padding: 8px 10px;
   border-radius: var(--r-sm);
@@ -243,7 +243,43 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
 }
 @keyframes pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .part:hover, .part.is-hot { background: var(--surface-3); }
-.part__dot { width: 12px; height: 12px; border-radius: 4px; }
+/* The tile carries the asset's logo; the ring around it carries the slice
+   colour, so the row and the pie stay tied together. */
+.part__logo {
+  width: 44px; height: 44px; padding: 0;
+  display: grid; place-items: center;
+  border: 0; border-radius: 15px;
+  background: transparent;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--slice, transparent);
+  transition: transform .18s var(--ease), box-shadow .18s var(--ease);
+}
+.part__logo:hover { transform: scale(1.06); }
+.part__ident { display: flex; flex-direction: column; min-width: 0; }
+.part__sub {
+  color: var(--muted); font-size: 11.5px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  margin-top: -2px;
+}
+
+/* ── Logo tiles ──────────────────────────────────────────────────────────── */
+
+.tile {
+  display: inline-grid; place-items: center; flex: none;
+  border-radius: 11px;
+  background: color-mix(in oklab, var(--brand) 18%, var(--surface));
+  color: var(--brand);
+}
+.tile svg { width: 58%; height: 58%; display: block; }
+.tile__mono { font-size: .4em; font-weight: 700; letter-spacing: -.02em; }
+.tile--md { width: 34px; height: 34px; font-size: 34px; }
+.tile--lg { width: 42px; height: 42px; border-radius: 13px; font-size: 42px; }
+
+/* Keep near-black and near-white brand colours legible on both surfaces. */
+@supports (color: oklch(from red l c h)) {
+  .tile { color: oklch(from var(--brand) min(l, 0.68) c h); }
+  :root:not([data-theme="light"]) .tile { color: oklch(from var(--brand) max(l, 0.72) c h); }
+}
 .part__name {
   border: 0; background: transparent; padding: 4px 0;
   font-size: 15px; font-weight: 600; letter-spacing: -0.015em;
@@ -412,7 +448,8 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
 }
 
 @media (max-width: 520px) {
-  .part { grid-template-columns: 12px minmax(0, 1fr) 74px 30px; row-gap: 2px; }
+  .part { grid-template-columns: 40px minmax(0, 1fr) 74px 30px; row-gap: 2px; }
+  .part__logo { width: 40px; height: 40px; border-radius: 13px; }
   .part__amount {
     grid-column: 2 / 4;
     text-align: left; font-size: 12.5px; color: var(--muted);
@@ -427,4 +464,84 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
     animation-duration: .001ms !important;
     transition-duration: .001ms !important;
   }
+}
+
+
+/* ── Export bar ──────────────────────────────────────────────────────────── */
+
+.export {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+  padding: 18px clamp(18px, 3vw, 26px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  box-shadow: var(--shadow);
+}
+.export__text { display: flex; flex-direction: column; gap: 2px; }
+.export__text strong { font-size: 15px; }
+.export__text span { color: var(--muted); font-size: 13px; }
+.export__actions { display: flex; gap: 8px; }
+
+/* ── Asset picker ────────────────────────────────────────────────────────── */
+
+.sheet__panel--picker {
+  width: min(520px, 100%);
+  display: flex; flex-direction: column;
+  max-height: 86vh; padding: 22px 0 0;
+}
+.sheet__panel--picker .sheet__head { padding: 0 22px; }
+.pickbar {
+  display: flex; align-items: center; gap: 9px;
+  margin: 0 22px;
+  padding: 11px 14px;
+  border: 1px solid var(--line); border-radius: 13px;
+  background: var(--surface-2);
+}
+.pickbar:focus-within { border-color: var(--accent); }
+.pickbar svg { width: 17px; height: 17px; color: var(--muted); flex: none; }
+.pickbar input { flex: 1; min-width: 0; border: 0; background: transparent; }
+.pickbar input:focus { outline: none; }
+
+.pickchips { display: flex; gap: 6px; flex-wrap: wrap; padding: 12px 22px 4px; }
+.pickchip {
+  padding: 6px 12px; border-radius: 999px;
+  border: 1px solid var(--line); background: transparent;
+  color: var(--ink-2); font-size: 12.5px; font-weight: 600;
+  cursor: pointer;
+  transition: background .16s var(--ease), color .16s var(--ease), border-color .16s var(--ease);
+}
+.pickchip:hover { background: var(--surface-3); color: var(--ink); }
+.pickchip.is-on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+.picklist { flex: 1; overflow-y: auto; padding: 8px 14px 12px; }
+.picklist__group {
+  padding: 12px 8px 6px;
+  color: var(--muted); font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+}
+.pickrow {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; padding: 9px 10px;
+  border: 0; border-radius: 13px;
+  background: transparent; color: var(--ink);
+  text-align: left; cursor: pointer;
+  transition: background .15s var(--ease);
+}
+.pickrow:hover { background: var(--surface-3); }
+.pickrow.is-taken { opacity: .5; }
+.pickrow__text { display: flex; flex-direction: column; flex: 1; min-width: 0; line-height: 1.25; }
+.pickrow__text strong { font-size: 14.5px; font-weight: 700; }
+.pickrow__text small { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pickrow__tag {
+  padding: 3px 9px; border-radius: 999px;
+  background: var(--surface-3); color: var(--muted);
+  font-size: 10.5px; font-weight: 650; white-space: nowrap;
+}
+.pickfoot { padding: 14px 22px 20px; border-top: 1px solid var(--line); background: var(--surface-2); }
+.pickfoot .btn { width: 100%; justify-content: center; }
+
+@media (max-width: 520px) {
+  .export { flex-direction: column; align-items: stretch; }
+  .export__actions .btn { flex: 1; justify-content: center; }
 }
