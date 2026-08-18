@@ -86,6 +86,7 @@
 
   const MARKS = window.MARKS || {};
   const CLASS_MARKS = window.CLASS_MARKS || {};
+  const LOGO_FILES = window.LOGO_FILES || {};
 
   /** The logo for a ticker: its own brand mark, else its class glyph. */
   function markFor(ticker) {
@@ -136,29 +137,54 @@
   const assetOf = (p) => (p && p.ticker ? window.assetByTicker(p.ticker) : null);
 
   /** Rounded tile holding a brand mark, a drawn glyph, or a two-letter monogram. */
-  function tileEl(ticker, label, size) {
-    const tile = document.createElement('span');
-    tile.className = 'tile tile--' + (size || 'md');
-    const mark = markFor(ticker);
-    tile.style.setProperty('--brand', brandOf(ticker));
+function tileEl(ticker, label, size) {
+  const tile = document.createElement('span');
+  tile.className = 'tile tile--' + (size || 'md');
 
-    if (mark) {
-      const svg = document.createElementNS(SVG_NS, 'svg');
-      const vb = mark.vb || 24;
-      svg.setAttribute('viewBox', `0 0 ${vb} ${vb}`);
-      svg.setAttribute('aria-hidden', 'true');
-      /* A polychrome logo keeps its real colours; monochrome marks take the tile ink. */
-      paintMark(svg, mark, mark.poly ? null : 'currentColor');
-      tile.appendChild(svg);
-    } else {
-      const mono = document.createElement('span');
-      mono.className = 'tile__mono';
-      mono.textContent = String(label || ticker || '?')
-        .replace(/[^A-Za-z0-9]/g, '').slice(0, 2).toUpperCase() || '?';
-      tile.appendChild(mono);
-    }
-    return tile;
+  const logoSrc = LOGO_FILES[ticker];
+  const mark = markFor(ticker);
+
+  tile.style.setProperty('--brand', brandOf(ticker));
+
+  if (logoSrc) {
+    const img = document.createElement('img');
+
+    img.src = logoSrc;
+    img.alt = '';
+    img.className = 'tile__logo';
+
+    tile.appendChild(img);
+
+  } else if (mark) {
+    const svg = document.createElementNS(SVG_NS, 'svg');
+    const vb = mark.vb || 24;
+
+    svg.setAttribute('viewBox', `0 0 ${vb} ${vb}`);
+    svg.setAttribute('aria-hidden', 'true');
+
+    paintMark(
+      svg,
+      mark,
+      mark.poly ? null : 'currentColor'
+    );
+
+    tile.appendChild(svg);
+
+  } else {
+    const mono = document.createElement('span');
+
+    mono.className = 'tile__mono';
+
+    mono.textContent = String(label || ticker || '?')
+      .replace(/[^A-Za-z0-9]/g, '')
+      .slice(0, 2)
+      .toUpperCase() || '?';
+
+    tile.appendChild(mono);
   }
+
+  return tile;
+}
 
   /* ── State ──────────────────────────────────────────────────────────────── */
 
