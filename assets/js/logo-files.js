@@ -2,6 +2,7 @@ window.LOGO_FILES = {
   // Indonesian stocks
   BBCA: 'assets/logos/BBCA.png',
   BMRI: 'assets/logos/BMRI.png',
+  TLKM: 'assets/logos/TLKM.png',
   ASII: 'assets/logos/ASII.png',
   ICBP: 'assets/logos/ICBP.png',
   KLBF: 'assets/logos/KLBF.png',
