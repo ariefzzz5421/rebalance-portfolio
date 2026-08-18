@@ -494,6 +494,18 @@ if (entry.markKey !== markKey) {
   }
 }
 
+      entry.path.setAttribute('fill', d.color);
+
+entry.path.setAttribute(
+  'aria-label',
+  `${d.label}: ${pctText(d.pct)}`
+);
+
+entry.path.classList.toggle(
+  'is-rest',
+  !!d.rest
+);
+
     const gap = 2 / R;
     animate(host, 480, (t) => {
       let a = -Math.PI / 2;
