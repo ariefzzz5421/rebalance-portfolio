@@ -235,6 +235,13 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
   transition: opacity .2s var(--ease);
 }
 .slice__icon { pointer-events: none; transition: opacity .2s var(--ease); }
+.slice__brand-image {
+  pointer-events: none;
+
+  filter:
+    drop-shadow(0 0 1px rgba(255, 255, 255, .85))
+    drop-shadow(0 1px 1.5px rgba(0, 0, 0, .75));
+}
 .pie__caption {
   margin-top: 16px;
   color: var(--muted); font-size: 13px; font-weight: 550;
@@ -310,6 +317,10 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
   object-fit: contain;
   display: block;
   pointer-events: none;
+
+   filter:
+    drop-shadow(0 0 .6px rgba(255, 255, 255, .45))
+    drop-shadow(0 1px 1px rgba(0, 0, 0, .35));
 }
 
 .tile__mono {
