@@ -199,9 +199,35 @@ button, input { font: inherit; color: inherit; }
 
 .pie-wrap { display: flex; flex-direction: column; align-items: center; }
 svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
-.slice { cursor: pointer; transition: filter .2s var(--ease); }
-.slice:hover { filter: brightness(1.06); }
-.slice.is-rest { opacity: .85; }
+.slice {
+  cursor: pointer;
+  outline: none;
+
+  stroke: transparent;
+  stroke-width: 0;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+
+  transition:
+    filter .2s var(--ease),
+    stroke .16s var(--ease),
+    stroke-width .16s var(--ease);
+}
+
+.slice:hover {
+  filter: brightness(1.06);
+}
+
+.slice:focus {
+  outline: none;
+  stroke: var(--ink);
+  stroke-width: 2.5px;
+  stroke-opacity: .88;
+}
+
+.slice.is-rest {
+  opacity: .85;
+}
 .slice__label {
   font-family: var(--display);
   font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
