@@ -49,12 +49,10 @@
       add('rect', { x: 0, y: 0, width: 24, height: 8, fill: '#ce1126' });
       add('rect', { x: 0, y: 8, width: 24, height: 8, fill: '#ffffff' });
     } else {
-      /* 13 stripes, then the canton. */
       for (let i = 0; i < 13; i++) {
         add('rect', { x: 0, y: (16 / 13) * i, width: 24, height: 16 / 13, fill: i % 2 ? '#ffffff' : '#b22234' });
       }
       add('rect', { x: 0, y: 0, width: 10, height: (16 / 13) * 7, fill: '#3c3b6e' });
-      /* A 5×4 lattice of stars stands in for the full 50. */
       for (let row = 0; row < 4; row++) {
         for (let col = 0; col < 5; col++) {
           const offset = row % 2 ? 1 : 0;
@@ -72,8 +70,6 @@
 
   /* ── Palette ────────────────────────────────────────────────────────────── */
 
-  /* Validated categorical steps: assigned in fixed slot order (never cycled by
-     rank), so a slice keeps its colour when others are added or removed. */
   const SERIES = {
     light: ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'],
     dark: ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#008300', '#9085e9', '#e66767'],
@@ -88,7 +84,6 @@
   const CLASS_MARKS = window.CLASS_MARKS || {};
   const LOGO_FILES = window.LOGO_FILES || {};
 
-  /** The logo for a ticker: its own brand mark, else its class glyph. */
   function markFor(ticker) {
     if (!ticker) return null;
     if (MARKS[ticker]) return MARKS[ticker];
@@ -96,7 +91,6 @@
     return (asset && MARKS[CLASS_MARKS[asset.cls]]) || null;
   }
 
-  /** Colour to paint a mark in: the asset's own brand beats a generic glyph. */
   function brandOf(ticker) {
     const asset = ticker ? window.assetByTicker(ticker) : null;
     if (asset && asset.color) return asset.color;
@@ -104,10 +98,6 @@
     return (mark && mark.hex) || '#8b8981';
   }
 
-  /**
-   * Append a mark's paths to an SVG node.
-   * @param color  a single ink, or null to let a polychrome mark keep its own.
-   */
   function paintMark(target, mark, color) {
     for (const part of mark.poly || []) {
       const path = document.createElementNS(SVG_NS, 'path');
@@ -135,89 +125,58 @@
   }
 
   const assetOf = (p) => (p && p.ticker ? window.assetByTicker(p.ticker) : null);
+
   function logoFileFor(ticker) {
-  if (!ticker) return null;
-
-  return LOGO_FILES[ticker] || null;
-}
-
-function paintLogoImage(target, src) {
-  const image =
-    document.createElementNS(
-      SVG_NS,
-      'image'
-    );
-
-  image.setAttribute('href', src);
-  image.setAttribute('x', '0');
-  image.setAttribute('y', '0');
-  image.setAttribute('width', '24');
-  image.setAttribute('height', '24');
-
-  image.setAttribute(
-    'preserveAspectRatio',
-    'xMidYMid meet'
-  );
-
-  image.setAttribute(
-    'class',
-    'slice__brand-image'
-  );
-
-  target.appendChild(image);
-
-  return image;
-}
-
-  /** Rounded tile holding a brand mark, a drawn glyph, or a two-letter monogram. */
-function tileEl(ticker, label, size) {
-  const tile = document.createElement('span');
-  tile.className = 'tile tile--' + (size || 'md');
-
-  const logoSrc = LOGO_FILES[ticker];
-  const mark = markFor(ticker);
-
-  tile.style.setProperty('--brand', brandOf(ticker));
-
-  if (logoSrc) {
-    const img = document.createElement('img');
-
-    img.src = logoSrc;
-    img.alt = '';
-    img.className = 'tile__logo';
-
-    tile.appendChild(img);
-
-  } else if (mark) {
-    const svg = document.createElementNS(SVG_NS, 'svg');
-    const vb = mark.vb || 24;
-
-    svg.setAttribute('viewBox', `0 0 ${vb} ${vb}`);
-    svg.setAttribute('aria-hidden', 'true');
-
-    paintMark(
-      svg,
-      mark,
-      mark.poly ? null : 'currentColor'
-    );
-
-    tile.appendChild(svg);
-
-  } else {
-    const mono = document.createElement('span');
-
-    mono.className = 'tile__mono';
-
-    mono.textContent = String(label || ticker || '?')
-      .replace(/[^A-Za-z0-9]/g, '')
-      .slice(0, 2)
-      .toUpperCase() || '?';
-
-    tile.appendChild(mono);
+    if (!ticker) return null;
+    return LOGO_FILES[ticker] || null;
   }
 
-  return tile;
-}
+  function paintLogoImage(target, src) {
+    const image = document.createElementNS(SVG_NS, 'image');
+    image.setAttribute('href', src);
+    image.setAttribute('x', '0');
+    image.setAttribute('y', '0');
+    image.setAttribute('width', '24');
+    image.setAttribute('height', '24');
+    image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    image.setAttribute('class', 'slice__brand-image');
+    target.appendChild(image);
+    return image;
+  }
+
+  function tileEl(ticker, label, size) {
+    const tile = document.createElement('span');
+    tile.className = 'tile tile--' + (size || 'md');
+
+    const logoSrc = LOGO_FILES[ticker];
+    const mark = markFor(ticker);
+    tile.style.setProperty('--brand', brandOf(ticker));
+
+    if (logoSrc) {
+      const img = document.createElement('img');
+      img.src = logoSrc;
+      img.alt = '';
+      img.className = 'tile__logo';
+      tile.appendChild(img);
+    } else if (mark) {
+      const svg = document.createElementNS(SVG_NS, 'svg');
+      const vb = mark.vb || 24;
+      svg.setAttribute('viewBox', `0 0 ${vb} ${vb}`);
+      svg.setAttribute('aria-hidden', 'true');
+      paintMark(svg, mark, mark.poly ? null : 'currentColor');
+      tile.appendChild(svg);
+    } else {
+      const mono = document.createElement('span');
+      mono.className = 'tile__mono';
+      mono.textContent = String(label || ticker || '?')
+        .replace(/[^A-Za-z0-9]/g, '')
+        .slice(0, 2)
+        .toUpperCase() || '?';
+      tile.appendChild(mono);
+    }
+
+    return tile;
+  }
 
   /* ── State ──────────────────────────────────────────────────────────────── */
 
@@ -267,7 +226,6 @@ function tileEl(ticker, label, size) {
     }).format(v || 0);
   }
 
-  /** Short form for the middle of the pie: 12,4 jt / $12.4M. */
   function moneyShort(v) {
     const c = cur();
     const n = Math.abs(v || 0);
@@ -284,10 +242,6 @@ function tileEl(ticker, label, size) {
   const pctText = (v) =>
     new Intl.NumberFormat(cur().locale, { maximumFractionDigits: 1 }).format(v || 0) + '%';
 
-  /**
-   * Read a number the way the active locale writes one: in id-ID a dot groups
-   * thousands and a comma is the decimal point; en-US is the other way round.
-   */
   function parseNum(raw) {
     let s = String(raw == null ? '' : raw).replace(/[^\d.,]/g, '');
     if (!s) return 0;
@@ -301,7 +255,6 @@ function tileEl(ticker, label, size) {
   const totalPct = () => state.parts.reduce((s, p) => s + (Number(p.pct) || 0), 0);
   const amountOf = (p) => (state.total * (Number(p.pct) || 0)) / 100;
 
-  /** Lowest palette slot not already taken, so colours stay stable and distinct. */
   function nextSlot() {
     const used = new Set(state.parts.map((p) => p.slot));
     for (let s = 1; s <= 8; s++) if (!used.has(s)) return s;
@@ -310,11 +263,6 @@ function tileEl(ticker, label, size) {
 
   const round1 = (v) => Math.round(v * 10) / 10;
 
-  /**
-   * Biggest slice first. Called at the moments a share settles — never while a
-   * field is being typed in, or rows would jump under the cursor mid-keystroke.
-   * Sort is stable, so equal shares keep the order they were added in.
-   */
   function sortParts() {
     state.parts.sort((a, b) => (Number(b.pct) || 0) - (Number(a.pct) || 0));
     signature = '';
@@ -363,7 +311,6 @@ function tileEl(ticker, label, size) {
   }
   const hideTip = () => tip && tip.classList.remove('on');
 
-  /** Slices in fixed slot order, plus whatever share is still unassigned. */
   function slices() {
     const assigned = Math.min(totalPct(), 100);
     const out = state.parts
@@ -442,69 +389,33 @@ function tileEl(ticker, label, size) {
         host._paths.set(d.key, entry);
         bindSlice(entry, d.key);
       }
+
       entry.data = d;
-     /* Prefer official local logo; use marks.js only as fallback. */
-const logoSrc =
-  d.rest
-    ? null
-    : logoFileFor(d.ticker);
+      const logoSrc = d.rest ? null : logoFileFor(d.ticker);
+      const markKey = `${d.ticker || ''}|${logoSrc || ''}|${d.color}`;
 
-const markKey =
-  (d.ticker || '') +
-  '|' +
-  (logoSrc || '') +
-  '|' +
-  d.color;
+      if (entry.markKey !== markKey) {
+        entry.markKey = markKey;
+        entry.icon.textContent = '';
+        entry.logoSrc = logoSrc;
+        entry.mark = d.rest || logoSrc ? null : markFor(d.ticker);
+        entry.hasIcon = !!(entry.logoSrc || entry.mark);
 
-if (entry.markKey !== markKey) {
-  entry.markKey = markKey;
-
-  entry.icon.textContent = '';
-
-  entry.logoSrc = logoSrc;
-
-  entry.mark =
-    d.rest || logoSrc
-      ? null
-      : markFor(d.ticker);
-
-  entry.hasIcon =
-    !!(entry.logoSrc || entry.mark);
-
-  if (entry.logoSrc) {
-    paintLogoImage(
-      entry.icon,
-      entry.logoSrc
-    );
-
-    entry.iconScale = 20 / 24;
-
-  } else if (entry.mark) {
-    paintMark(
-      entry.icon,
-      entry.mark,
-      readable(d.color)
-    );
-
-    entry.iconScale =
-      20 / (entry.mark.vb || 24);
-
-  } else {
-    entry.iconScale = 1;
-  }
-}
+        if (entry.logoSrc) {
+          paintLogoImage(entry.icon, entry.logoSrc);
+          entry.iconScale = 20 / 24;
+        } else if (entry.mark) {
+          paintMark(entry.icon, entry.mark, readable(d.color));
+          entry.iconScale = 20 / (entry.mark.vb || 24);
+        } else {
+          entry.iconScale = 1;
+        }
+      }
 
       entry.path.setAttribute('fill', d.color);
-
-entry.path.setAttribute(
-  'aria-label',
-  `${d.label}: ${pctText(d.pct)}`
-);
-
-entry.path.classList.toggle(
-  'is-rest',
-  !!d.rest
-);
+      entry.path.setAttribute('aria-label', `${d.label}: ${pctText(d.pct)}`);
+      entry.path.classList.toggle('is-rest', !!d.rest);
+    }
 
     const gap = 2 / R;
     animate(host, 480, (t) => {
@@ -520,17 +431,18 @@ entry.path.classList.toggle(
         entry.a0 = a0;
         entry.a1 = a1;
 
-        /* A wedge only carries a mark and a number when it has room for them:
-           the logo needs more width than the text, so it has a higher bar. */
         const share = (value / Math.max(sum, 1e-9)) * 100;
         const mid = (a0 + a1) / 2;
-        const withIcon = share >= 13 &&!!entry.hasIcon;
+        const withIcon = share >= 13 && !!entry.hasIcon;
         const reach = withIcon ? 0.55 : 0.62;
         const px = CX + Math.cos(mid) * R * reach;
         const py = CY + Math.sin(mid) * R * reach;
 
         if (withIcon) {
-          entry.icon.setAttribute('transform',`translate(${px - 10} ${py - 18}) scale(${entry.iconScale})`);
+          entry.icon.setAttribute(
+            'transform',
+            `translate(${px - 10} ${py - 18}) scale(${entry.iconScale})`
+          );
           entry.icon.style.opacity = '1';
         } else {
           entry.icon.style.opacity = '0';
@@ -554,7 +466,6 @@ entry.path.classList.toggle(
     writeCaption(host);
   }
 
-  /** White or ink, whichever survives on the fill behind it. */
   function readable(hex) {
     const h = hex.replace('#', '');
     const int = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
@@ -563,8 +474,6 @@ entry.path.classList.toggle(
       return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
     });
     const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    /* 0.179 is where white and black land on equal WCAG contrast against a
-       fill; above it black wins, below it white does. */
     return luminance > 0.179 ? '#14140f' : '#ffffff';
   }
 
@@ -600,8 +509,6 @@ entry.path.classList.toggle(
     entry.path.setAttribute('d', arc(entry.a0 || 0, entry.a1 || 0, px));
   }
 
-  /* The total already sits huge at the top of the page, so the pie stays a
-     pie — no disc over the middle — and just gets a line of context below. */
   function writeCaption(host) {
     let box = host.querySelector('.pie__caption');
     if (!box) {
@@ -638,8 +545,6 @@ entry.path.classList.toggle(
   function renderParts() {
     const host = $('#parts');
     const sig = state.parts.map((p) => p.id + ':' + (p.ticker || '')).join('|');
-    /* Only a field being typed in blocks a rebuild — a focused button (say the
-       delete X) must not, or the row it just removed would stay on screen. */
     const active = document.activeElement;
     const typing = !!(active && active.dataset && active.dataset.field && host.contains(active));
 
@@ -750,7 +655,6 @@ entry.path.classList.toggle(
     save();
   }
 
-  /** Add a slice without wrecking the ratios already set: everyone shrinks. */
   function addPart() {
     const share = 100 / (state.parts.length + 1);
     const keep = 1 - share / 100;
@@ -759,18 +663,11 @@ entry.path.classList.toggle(
     const added = state.parts[state.parts.length - 1];
     sortParts();
     render();
-    /* Straight into the picker — choosing the asset is the point. */
     openPicker(added.id);
   }
 
-  /**
-   * Deleting takes the slice and its share with it. The freed percentage is
-   * left unassigned — it shows up as "Belum dibagi" for you to place yourself,
-   * rather than quietly inflating whatever happens to be left.
-   */
   function removePart(id) {
     if (!state.parts.some((p) => p.id === id)) return;
-    /* The button is about to be removed; don't leave focus stranded on it. */
     if (document.activeElement) document.activeElement.blur();
     state.parts = state.parts.filter((p) => p.id !== id);
     signature = '';
@@ -795,7 +692,6 @@ entry.path.classList.toggle(
     render();
   }
 
-  /** Push the rounding leftover onto the biggest slice so the total reads 100%. */
   function fixRounding() {
     const sum = totalPct();
     const drift = round1(100 - sum);
@@ -926,9 +822,6 @@ entry.path.classList.toggle(
 
   function exportSlices() {
     const list = slices();
-    /* A wedge's width is its share of the circle, which only equals the typed
-       percentage when the parts add up to 100. Label it with what it actually
-       shows; the legend row keeps the number the user entered. */
     const sum = list.reduce((s, d) => s + d.pct, 0) || 1;
     return list.map((d) => {
       const part = state.parts.find((p) => p.id === d.key);
@@ -942,6 +835,7 @@ entry.path.classList.toggle(
         amountText: money((state.total * d.pct) / 100),
         color: d.color,
         ink: readable(d.color),
+        logoSrc: part ? logoFileFor(part.ticker) : null,
         mark: part ? markFor(part.ticker) : null,
         brand: part ? brandOf(part.ticker) : d.color,
         rest: !!d.rest,
@@ -955,7 +849,6 @@ entry.path.classList.toggle(
     const css = getComputedStyle(document.documentElement);
     const token = (name) => css.getPropertyValue(name).trim();
 
-    /* Hold the original children so the icon survives the progress label. */
     const original = Array.from(button.childNodes);
     button.disabled = true;
     button.textContent = 'Menyimpan…';
@@ -1022,7 +915,6 @@ entry.path.classList.toggle(
   function setCurrency(code) {
     if (!CURRENCIES[code] || code === state.currency) return;
     state.currency = code;
-    /* The amount is a plain number; only its formatting changes. */
     $('#total').value = state.total ? formatInput(state.total) : '';
     signature = '';
     renderCurrencyOptions();
@@ -1040,6 +932,7 @@ entry.path.classList.toggle(
     document.body.classList.add('locked');
     requestAnimationFrame(() => sheet.classList.add('on'));
   }
+
   function closeSheet() {
     const sheet = $('#settings');
     sheet.classList.remove('on');
@@ -1080,7 +973,6 @@ entry.path.classList.toggle(
       const p = state.parts.find((x) => x.id === row.dataset.id);
       if (!p) return;
       if (field === 'name') {
-        /* Hand-typing an identity means this slice is no longer that asset. */
         p.name = e.target.value;
         if (p.ticker && e.target.value !== p.ticker) {
           p.ticker = null;
@@ -1099,8 +991,6 @@ entry.path.classList.toggle(
     parts.addEventListener('blur', (e) => {
       const field = e.target.dataset && e.target.dataset.field;
       if (!field) return;
-      /* Rebuilding is deferred while an input has focus; do it once it leaves —
-         and that is also the moment a changed share may reorder the list. */
       if (field === 'pct') sortParts();
       setTimeout(render, 0);
     }, true);
@@ -1118,7 +1008,6 @@ entry.path.classList.toggle(
       else if (!$('#settings').hidden) closeSheet();
     });
 
-    /* Asset picker */
     $$('#picker [data-close]').forEach((b) => b.addEventListener('click', closePicker));
     $('#pick-search').addEventListener('input', (e) => {
       pickUI.q = e.target.value;
@@ -1130,7 +1019,6 @@ entry.path.classList.toggle(
     });
     $('#pick-custom').addEventListener('click', useCustomName);
 
-    /* Download */
     $('#dl-jpg').addEventListener('click', (e) => saveAs('jpg', e.currentTarget));
     $('#dl-pdf').addEventListener('click', (e) => saveAs('pdf', e.currentTarget));
     $('#ccy-options').addEventListener('click', (e) => {
