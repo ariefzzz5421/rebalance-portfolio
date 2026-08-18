@@ -135,6 +135,39 @@
   }
 
   const assetOf = (p) => (p && p.ticker ? window.assetByTicker(p.ticker) : null);
+  function logoFileFor(ticker) {
+  if (!ticker) return null;
+
+  return LOGO_FILES[ticker] || null;
+}
+
+function paintLogoImage(target, src) {
+  const image =
+    document.createElementNS(
+      SVG_NS,
+      'image'
+    );
+
+  image.setAttribute('href', src);
+  image.setAttribute('x', '0');
+  image.setAttribute('y', '0');
+  image.setAttribute('width', '24');
+  image.setAttribute('height', '24');
+
+  image.setAttribute(
+    'preserveAspectRatio',
+    'xMidYMid meet'
+  );
+
+  image.setAttribute(
+    'class',
+    'slice__brand-image'
+  );
+
+  target.appendChild(image);
+
+  return image;
+}
 
   /** Rounded tile holding a brand mark, a drawn glyph, or a two-letter monogram. */
 function tileEl(ticker, label, size) {
@@ -410,19 +443,56 @@ function tileEl(ticker, label, size) {
         bindSlice(entry, d.key);
       }
       entry.data = d;
-      /* Repaint the wedge's mark only when the asset behind it changed. */
-      const markKey = (d.ticker || '') + '|' + d.color;
-      if (entry.markKey !== markKey) {
-        entry.markKey = markKey;
-        entry.icon.textContent = '';
-        entry.mark = d.rest ? null : markFor(d.ticker);
-        if (entry.mark) paintMark(entry.icon, entry.mark, readable(d.color));
-        entry.markScale = 20 / (entry.mark ? entry.mark.vb || 24 : 24);
-      }
-      entry.path.setAttribute('fill', d.color);
-      entry.path.setAttribute('aria-label', `${d.label}: ${pctText(d.pct)}`);
-      entry.path.classList.toggle('is-rest', !!d.rest);
-    }
+     /* Prefer official local logo; use marks.js only as fallback. */
+const logoSrc =
+  d.rest
+    ? null
+    : logoFileFor(d.ticker);
+
+const markKey =
+  (d.ticker || '') +
+  '|' +
+  (logoSrc || '') +
+  '|' +
+  d.color;
+
+if (entry.markKey !== markKey) {
+  entry.markKey = markKey;
+
+  entry.icon.textContent = '';
+
+  entry.logoSrc = logoSrc;
+
+  entry.mark =
+    d.rest || logoSrc
+      ? null
+      : markFor(d.ticker);
+
+  entry.hasIcon =
+    !!(entry.logoSrc || entry.mark);
+
+  if (entry.logoSrc) {
+    paintLogoImage(
+      entry.icon,
+      entry.logoSrc
+    );
+
+    entry.iconScale = 20 / 24;
+
+  } else if (entry.mark) {
+    paintMark(
+      entry.icon,
+      entry.mark,
+      readable(d.color)
+    );
+
+    entry.iconScale =
+      20 / (entry.mark.vb || 24);
+
+  } else {
+    entry.iconScale = 1;
+  }
+}
 
     const gap = 2 / R;
     animate(host, 480, (t) => {
@@ -442,14 +512,13 @@ function tileEl(ticker, label, size) {
            the logo needs more width than the text, so it has a higher bar. */
         const share = (value / Math.max(sum, 1e-9)) * 100;
         const mid = (a0 + a1) / 2;
-        const withIcon = share >= 13 && !!entry.mark;
+        const withIcon = share >= 13 &&!!entry.hasIcon;
         const reach = withIcon ? 0.55 : 0.62;
         const px = CX + Math.cos(mid) * R * reach;
         const py = CY + Math.sin(mid) * R * reach;
 
         if (withIcon) {
-          entry.icon.setAttribute('transform',
-            `translate(${px - 10} ${py - 18}) scale(${entry.markScale})`);
+          entry.icon.setAttribute('transform',`translate(${px - 10} ${py - 18}) scale(${entry.iconScale})`);
           entry.icon.style.opacity = '1';
         } else {
           entry.icon.style.opacity = '0';
