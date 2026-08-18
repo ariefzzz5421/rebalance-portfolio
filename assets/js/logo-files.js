@@ -1,14 +1,21 @@
 window.LOGO_FILES = {
-  BBCA: 'assets/logos/bbca.png',
-  BBRI: 'assets/logos/bbri.png',
-  BMRI: 'assets/logos/bmri.png',
-  TLKM: 'assets/logos/tlkm.png',
+  // Indonesian stocks
+  BBCA: 'assets/logos/BBCA..png',
+  BMRI: 'assets/logos/BMRI.png',
+  ASII: 'assets/logos/ASII.png',
+  ICBP: 'assets/logos/ICBP.png',
+  KLBF: 'assets/logos/KLBF.png',
+  ANTM: 'assets/logos/ANTM.png',
 
-  AAPL: 'assets/logos/aapl.png',
-  MSFT: 'assets/logos/msft.png',
-  NVDA: 'assets/logos/nvda.png',
+  // US stocks
+  GOOGL: 'assets/logos/GOOGL.png',
+  AMZN: 'assets/logos/AMZN.png',
+  JPM: 'assets/logos/JPM.png',
+  V: 'assets/logos/VISA.png',
 
-  BTC: 'assets/logos/btc.png',
-  ETH: 'assets/logos/eth.png',
-  SOL: 'assets/logos/sol.png',
+  // ETF / Index
+  SPX: 'assets/logos/SNP500.png',
+  QQQ: 'assets/logos/QQQ',
+  VOO: 'assets/logos/VOO',
+  VTI: 'assets/logos/VTI.svg',
 };
