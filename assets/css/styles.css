@@ -272,6 +272,25 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
   color: var(--brand);
 }
 .tile svg { width: 58%; height: 58%; display: block; }
+.tile svg { 
+  width: 58%; 
+  height: 58%; 
+  display: block; 
+}
+
+.tile__logo {
+  width: 70%;
+  height: 70%;
+  object-fit: contain;
+  display: block;
+  pointer-events: none;
+}
+
+.tile__mono { 
+  font-size: .4em; 
+  font-weight: 700; 
+  letter-spacing: -.02em; 
+}
 .tile__mono { font-size: .4em; font-weight: 700; letter-spacing: -.02em; }
 .tile--md { width: 34px; height: 34px; font-size: 34px; }
 .tile--lg { width: 42px; height: 42px; border-radius: 13px; font-size: 42px; }
