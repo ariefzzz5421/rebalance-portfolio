@@ -6,6 +6,7 @@ window.LOGO_FILES = {
   ICBP: 'assets/logos/ICBP.png',
   KLBF: 'assets/logos/KLBF.png',
   ANTM: 'assets/logos/ANTM.png',
+  BBRI: 'assets/logos/BBRI.png',
 
   // US stocks
   GOOGL: 'assets/logos/GOOGL.png',
@@ -15,7 +16,7 @@ window.LOGO_FILES = {
 
   // ETF / Index
   SPX: 'assets/logos/SNP500.png',
-  QQQ: 'assets/logos/QQQ',
-  VOO: 'assets/logos/VOO',
+  QQQ: 'assets/logos/QQQ.svg',
+  VOO: 'assets/logos/VOO.svg',
   VTI: 'assets/logos/VTI.svg',
 };
