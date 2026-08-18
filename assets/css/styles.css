@@ -271,7 +271,7 @@ svg.pie { width: 100%; max-width: 320px; height: auto; overflow: visible; }
   background: color-mix(in oklab, var(--brand) 18%, var(--surface));
   color: var(--brand);
 }
-.tile svg { width: 58%; height: 58%; display: block; }
+
 .tile svg {
   width: 58%;
   height: 58%;
