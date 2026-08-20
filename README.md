@@ -9,8 +9,8 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
 ## Cara pakai
 
 1. **Isi uang yang kamu punya** di kolom besar paling atas.
-2. **Pilih asetnya** — klik logo di kiri tiap baris untuk membuka katalog: saham
-   Indonesia, saham Amerika, ETF & indeks, kripto, emas, obligasi, dan kas.
+2. **Pilih asetnya** — klik logo di kiri tiap baris untuk membuka katalog:
+   IDX Stock, US Stock, ETF & indeks, kripto, emas, obligasi, dan kas.
    Tiap aset punya ticker, nama lengkap, dan logonya. Mau nama sendiri
    (misal "Dana darurat")? Ada tombol **Pakai nama sendiri**, atau ketik
    langsung di kolom namanya.
@@ -29,9 +29,13 @@ Kalau jumlahnya belum 100%, sisanya muncul sebagai potongan abu-abu "Belum
 dibagi" dan lencana di kanan atas berubah warna. Lebih dari 100% juga ditandai.
 
 Daftarnya **urut otomatis dari porsi terbesar ke terkecil**, begitu juga urutan
-potongan di pie chart dan di file unduhan. Urutannya baru disusun ulang saat
-angkanya selesai diketik, bukan tiap ketukan tombol — jadi barisnya tidak
-melompat di bawah kursormu.
+potongan di pie chart dan di file unduhan. Urutannya menyusul **seketika sambil
+kamu mengetik**: begitu satu baris jadi 50% sementara yang lain 30%, baris itu
+langsung naik — meluncur ke posisi barunya, bukan melompat.
+
+Yang bergeser cuma tampilannya. Baris yang sedang kamu ketik tetap elemen yang
+sama, jadi fokus dan posisi kursormu ikut naik bersamanya dan kamu bisa terus
+mengetik tanpa terputus.
 
 Setiap potongan pie menampilkan logo asetnya dan persennya, selama potongannya
 cukup lebar (logo butuh ruang lebih dari angkanya, jadi ambangnya lebih tinggi).
@@ -45,17 +49,37 @@ aktif, digambar ulang di canvas pada resolusi 2× supaya tetap tajam saat
 dicetak atau dibagikan. PDF-nya satu halaman berisi gambar yang sama, jadi apa
 yang kamu lihat persis itu yang tersimpan.
 
+## Bahasa
+
+Tombol pengaturan di kanan atas punya pilihan bahasa: **Bahasa Indonesia** dan
+**English**. Seluruh antarmuka ikut berganti — termasuk lencana persen, keterangan
+di bawah pie, katalog aset, dan teks di file unduhan.
+
+Bahasa pertama dipilih dari setelan browsermu; kalau kamu menggantinya, pilihanmu
+yang dipakai seterusnya. Nama perusahaan dan ticker tidak diterjemahkan. Yang
+ikut berganti hanya nama instrumen yang memang berupa keterangan — "Kas /
+Tabungan" jadi "Cash / Savings" — sementara nama resmi seperti "SBN Ritel
+(ORI/SR/ST/SBR)" tetap apa adanya.
+
 ## Mata uang
 
-Tombol pengaturan di kanan atas menyediakan **IDR** dan **USD**, lengkap dengan
-bendera negaranya. Pilihan ini mengubah simbol, pemisah ribuan, dan jumlah
-desimal — **nominalnya tidak dikonversi**, karena aplikasi ini tidak memakai
-data kurs.
+Pengaturan yang sama menyediakan enam mata uang, lengkap dengan benderanya.
+Pilihan ini mengubah simbol, pemisah ribuan, dan jumlah desimal —
+**nominalnya tidak dikonversi**, karena aplikasi ini tidak memakai data kurs.
 
 | | Simbol | Format | Desimal |
 |---|---|---|---|
 | Indonesia | `Rp` | `10.000.000` | 0 |
 | Amerika Serikat | `$` | `10,000,000.00` | 2 |
+| Zona Euro | `€` | `10.000.000,00` | 2 |
+| Singapura | `S$` | `10,000,000.00` | 2 |
+| Swiss | `CHF` | `10'000'000.00` | 2 |
+| Jepang | `¥` | `10,000,000` | 0 |
+
+Pemisah ribuan dan desimalnya dibaca dari `Intl`, bukan ditulis tangan — jadi
+kolom nominalnya mengerti `10'000'000.50` saat mata uangnya Swiss dan
+`10.000.000,50` saat Euro. Angka yang ditulis dengan tanda baca mata uang lain
+tetap terbaca, tidak diam-diam dianggap nol.
 
 ## Menjalankan
 
@@ -73,10 +97,11 @@ Deploy ke hosting statis mana pun tanpa langkah build.
 index.html               kerangka halaman
 assets/css/font.css      Bricolage Grotesque, tertanam sebagai data URI
 assets/css/styles.css    seluruh style, tema gelap & terang
+assets/js/i18n.js        teks antarmuka, Indonesia & Inggris
 assets/js/marks.js       path logo aset (simple-icons + glyph buatan sendiri)
 assets/js/assets.js      katalog aset: ticker, nama, kelas
 assets/js/export.js      penggambar kartu di canvas → JPG / PDF
-assets/js/app.js         state, perhitungan, pie chart, pengaturan
+assets/js/app.js         state, perhitungan, pie chart, pengaturan, bendera
 assets/fonts/            lisensi font
 ```
 

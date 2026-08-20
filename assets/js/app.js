@@ -13,25 +13,44 @@
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const STORE = 'porsi.v1';
 
+  const i18n = window.I18N;
+  const t = (key, vars) => i18n.t(key, vars);
+  /* Class names live in i18n so they follow the chosen language; assets.js
+     only carries the fallback wording. */
+  const clsLabel = (id) => t('cls.' + id);
+  const clsShort = (id) => t('clsShort.' + id);
+  /* Instruments described rather than branded ("Kas / Tabungan") have a
+     translation; a real company name does not, and keeps assets.js's wording. */
+  const assetName = (a) => (a ? (i18n.maybe('asset.' + a.ticker) || a.name) : '');
+
   /* ── Currencies ─────────────────────────────────────────────────────────── */
 
+  /* Formatting only. There is no FX feed here, so switching currency restyles
+     the number — it never converts it. */
   const CURRENCIES = {
-    IDR: { code: 'IDR', symbol: 'Rp', locale: 'id-ID', decimals: 0, name: 'Rupiah', country: 'Indonesia' },
-    USD: { code: 'USD', symbol: '$', locale: 'en-US', decimals: 2, name: 'Dolar Amerika', country: 'Amerika Serikat' },
+    IDR: { code: 'IDR', symbol: 'Rp', locale: 'id-ID', decimals: 0 },
+    USD: { code: 'USD', symbol: '$', locale: 'en-US', decimals: 2 },
+    EUR: { code: 'EUR', symbol: '\u20ac', locale: 'de-DE', decimals: 2 },
+    SGD: { code: 'SGD', symbol: 'S$', locale: 'en-SG', decimals: 2 },
+    CHF: { code: 'CHF', symbol: 'CHF', locale: 'de-CH', decimals: 2 },
+    JPY: { code: 'JPY', symbol: '\u00a5', locale: 'ja-JP', decimals: 0 },
   };
 
-  /** Five-point star, used for the stars on the US flag. */
-  function starPath(cx, cy, r) {
+  /** Five-point star, drawn point-up. Used by several of the flags below. */
+  function starPath(cx, cy, r, turn) {
     let d = '';
     for (let i = 0; i < 10; i++) {
       const rad = i % 2 ? r * 0.42 : r;
-      const a = (Math.PI / 5) * i - Math.PI / 2;
+      const a = (Math.PI / 5) * i - Math.PI / 2 + (turn || 0);
       d += `${i ? 'L' : 'M'}${(cx + rad * Math.cos(a)).toFixed(2)} ${(cy + rad * Math.sin(a)).toFixed(2)}`;
     }
     return d + 'Z';
   }
 
-  /** Flag icons, drawn rather than fetched. Simplified but recognisable at 20px. */
+  /**
+   * Flag icons, drawn rather than fetched — no network, no licence question.
+   * Each one is simplified down to what still reads at 20px wide.
+   */
   function flagEl(code) {
     const svg = document.createElementNS(SVG_NS, 'svg');
     svg.setAttribute('viewBox', '0 0 24 16');
@@ -44,11 +63,50 @@
       svg.appendChild(n);
       return n;
     };
+    const field = (fill) => add('rect', { x: 0, y: 0, width: 24, height: 16, fill });
 
     if (code === 'IDR') {
       add('rect', { x: 0, y: 0, width: 24, height: 8, fill: '#ce1126' });
       add('rect', { x: 0, y: 8, width: 24, height: 8, fill: '#ffffff' });
+
+    } else if (code === 'JPY') {
+      field('#ffffff');
+      add('circle', { cx: 12, cy: 8, r: 4.6, fill: '#bc002d' });
+
+    } else if (code === 'CHF') {
+      /* The Swiss flag is square; on a 3:2 field the cross keeps its proportions. */
+      field('#d52b1e');
+      add('rect', { x: 10.6, y: 3.4, width: 2.8, height: 9.2, fill: '#ffffff' });
+      add('rect', { x: 7.4, y: 6.6, width: 9.2, height: 2.8, fill: '#ffffff' });
+
+    } else if (code === 'EUR') {
+      field('#003399');
+      /* Twelve stars in a ring — the count is fixed, not a member tally. */
+      for (let i = 0; i < 12; i++) {
+        const a = (Math.PI / 6) * i - Math.PI / 2;
+        add('path', {
+          d: starPath(12 + Math.cos(a) * 4.9, 8 + Math.sin(a) * 4.9, 1.05),
+          fill: '#ffcc00',
+        });
+      }
+
+    } else if (code === 'SGD') {
+      add('rect', { x: 0, y: 0, width: 24, height: 8, fill: '#ed2939' });
+      add('rect', { x: 0, y: 8, width: 24, height: 8, fill: '#ffffff' });
+      /* Crescent: a white disc with a red disc bitten out of its right side. */
+      add('circle', { cx: 5.2, cy: 4.1, r: 3.1, fill: '#ffffff' });
+      add('circle', { cx: 6.9, cy: 4.1, r: 2.7, fill: '#ed2939' });
+      /* Five stars in a ring beside it. */
+      for (let i = 0; i < 5; i++) {
+        const a = (Math.PI * 2 / 5) * i - Math.PI / 2;
+        add('path', {
+          d: starPath(10.6 + Math.cos(a) * 1.75, 4.1 + Math.sin(a) * 1.75, 0.82),
+          fill: '#ffffff',
+        });
+      }
+
     } else {
+      /* United States: 13 stripes, then the canton. */
       for (let i = 0; i < 13; i++) {
         add('rect', { x: 0, y: (16 / 13) * i, width: 24, height: 16 / 13, fill: i % 2 ? '#ffffff' : '#b22234' });
       }
@@ -186,6 +244,7 @@
     currency: 'IDR',
     total: 0,
     theme: 'dark',
+    lang: i18n.detect(),
     parts: [
       { id: uid(), ticker: 'BBCA', name: 'BBCA', pct: 40, slot: 1 },
       { id: uid(), ticker: 'BTC', name: 'BTC', pct: 25, slot: 2 },
@@ -230,7 +289,7 @@
     const c = cur();
     const n = Math.abs(v || 0);
     const fmt = (x, digits) => new Intl.NumberFormat(c.locale, { maximumFractionDigits: digits }).format(x);
-    const unit = c.code === 'IDR'
+    const unit = c.code === 'IDR' && i18n.lang === 'id'
       ? [[1e12, ' T'], [1e9, ' M'], [1e6, ' jt'], [1e3, ' rb']]
       : [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
     for (const [size, suffix] of unit) {
@@ -242,13 +301,41 @@
   const pctText = (v) =>
     new Intl.NumberFormat(cur().locale, { maximumFractionDigits: 1 }).format(v || 0) + '%';
 
+  /**
+   * Which characters this locale uses to group thousands and to mark the
+   * decimal — asked of Intl rather than hardcoded, because de-CH groups with
+   * an apostrophe and ja-JP with a comma.
+   */
+  const sepCache = new Map();
+  function separators(locale) {
+    if (!sepCache.has(locale)) {
+      let group = ',', decimal = '.';
+      for (const part of new Intl.NumberFormat(locale).formatToParts(12345.6)) {
+        if (part.type === 'group') group = part.value;
+        if (part.type === 'decimal') decimal = part.value;
+      }
+      sepCache.set(locale, { group, decimal });
+    }
+    return sepCache.get(locale);
+  }
+
+  const escapeClass = (c) => c.replace(/[\\\]^-]/g, '\\$&');
+
+  /**
+   * Read a number the way the active locale writes one: id-ID groups with a
+   * dot and decimalises with a comma, en-US is the other way round. Anything
+   * that still fails to parse falls back to "just the digits", so a figure
+   * typed in another locale's punctuation is not silently read as zero.
+   */
   function parseNum(raw) {
-    let s = String(raw == null ? '' : raw).replace(/[^\d.,]/g, '');
+    const { group, decimal } = separators(cur().locale);
+    const text = String(raw == null ? '' : raw);
+    const keep = new RegExp(`[^0-9${escapeClass(group)}${escapeClass(decimal)}]`, 'g');
+    let s = text.replace(keep, '');
     if (!s) return 0;
-    const group = cur().code === 'IDR' ? '.' : ',';
-    const decimal = group === '.' ? ',' : '.';
-    s = s.split(group).join('').replace(decimal, '.');
-    const n = Number(s);
+    s = s.split(group).join('').split(decimal).join('.');
+    let n = Number(s);
+    if (!Number.isFinite(n)) n = Number(text.replace(/\D/g, ''));
     return Number.isFinite(n) && n >= 0 ? n : 0;
   }
 
@@ -263,9 +350,16 @@
 
   const round1 = (v) => Math.round(v * 10) / 10;
 
+  /** Biggest share first. Stable, so equal shares keep the order they arrived in. */
+  const byShare = (a, b) => (Number(b.pct) || 0) - (Number(a.pct) || 0);
+
+  /**
+   * Put the stored list in display order. The screen does not depend on this —
+   * rows are ranked live with CSS `order` — but it keeps what we save, what we
+   * export and what we draw telling the same story.
+   */
   function sortParts() {
-    state.parts.sort((a, b) => (Number(b.pct) || 0) - (Number(a.pct) || 0));
-    signature = '';
+    state.parts.sort(byShare);
   }
 
   /* ── Pie ────────────────────────────────────────────────────────────────── */
@@ -316,16 +410,16 @@
     const out = state.parts
       .filter((p) => (Number(p.pct) || 0) > 0)
       .slice()
-      .sort((a, b) => (Number(b.pct) || 0) - (Number(a.pct) || 0))
+      .sort(byShare)
       .map((p) => ({
         key: p.id,
         ticker: p.ticker || null,
-        label: p.ticker || p.name || 'Tanpa nama',
+        label: p.ticker || p.name || t('pie.unnamed'),
         pct: Number(p.pct) || 0,
         color: slotColor(p.slot),
       }));
     if (assigned < 99.95) {
-      out.push({ key: '__rest', label: 'Belum dibagi', pct: 100 - assigned, color: restColor(), rest: true });
+      out.push({ key: '__rest', label: t('pie.rest'), pct: 100 - assigned, color: restColor(), rest: true });
     }
     return out;
   }
@@ -346,7 +440,7 @@
       host._prev = new Map();
     }
     svg.setAttribute('aria-label',
-      data.map((d) => `${d.label} ${pctText(d.pct)}`).join(', ') || 'Belum ada porsi');
+      data.map((d) => `${d.label} ${pctText(d.pct)}`).join(', ') || t('pie.none'));
 
     if (!data.length || sum <= 0) {
       svg.textContent = '';
@@ -519,8 +613,8 @@
     const count = state.parts.filter((p) => (Number(p.pct) || 0) > 0).length;
     const left = 100 - totalPct();
     box.textContent = !count
-      ? 'Belum ada porsi'
-      : `${count} porsi` + (left > 0.05 ? ` · ${pctText(left)} belum dibagi` : '');
+      ? t('pie.none')
+      : t('pie.count', { n: count }) + (left > 0.05 ? t('pie.left', { p: pctText(left) }) : '');
   }
 
   const easeOut = (t) => 1 - Math.pow(1 - t, 3);
@@ -544,7 +638,19 @@
 
   function renderParts() {
     const host = $('#parts');
-    const sig = state.parts.map((p) => p.id + ':' + (p.ticker || '')).join('|');
+    /* Where every row sits right now — including any slide still in flight.
+       `rankParts` measures again afterwards and animates the difference. */
+    const before = new Map();
+    for (const row of $$('.part', host)) {
+      before.set(row.dataset.id, row.getBoundingClientRect().top);
+    }
+
+    /* Which rows exist and what asset each points at. Order is deliberately
+       left out: ranking is a CSS concern now, so a reshuffle never costs the
+       list its DOM — and never costs a field its caret. */
+    const sig = state.parts.map((p) => p.id + ':' + (p.ticker || '')).sort().join('|');
+    /* Only a field being typed in blocks a rebuild — a focused button (say the
+       delete X) must not, or the row it just removed would stay on screen. */
     const active = document.activeElement;
     const typing = !!(active && active.dataset && active.dataset.field && host.contains(active));
 
@@ -559,15 +665,71 @@
       if (!row) continue;
       row.querySelector('.part__logo').style.setProperty('--slice', slotColor(p.slot));
       row.querySelector('.part__amount').textContent = money(amountOf(p));
+      /* Buttons like "Bagi rata" rewrite the shares without rebuilding rows, so
+         the field has to be told. Never the one under the cursor, though. */
+      const field = row.querySelector('[data-field="pct"]');
+      if (field && field !== document.activeElement) {
+        const shown = p.pct ? String(p.pct).replace('.', separators(cur().locale).decimal) : '';
+        if (field.value !== shown) field.value = shown;
+      }
     }
 
     if (!state.parts.length) {
       const empty = document.createElement('p');
       empty.className = 'parts__empty';
-      empty.textContent = 'Belum ada porsi. Tambahkan satu untuk mulai membagi.';
+      empty.textContent = t('parts.empty');
       host.appendChild(empty);
     }
+    rankParts(before);
     renderBadge();
+  }
+
+  /**
+   * Rank the rows biggest-share-first and slide them into place.
+   *
+   * The ordering is CSS `order`, not DOM order, so the row you are typing in
+   * keeps its element, its focus and its caret while it climbs the list. The
+   * movement itself is FLIP: measure where each row was, drop it into its new
+   * slot, translate it back by the difference, then release the transform so
+   * the stylesheet's transition carries it home.
+   *
+   * @param before  row id → viewport top, measured before the reshuffle.
+   */
+  function rankParts(before) {
+    const rows = $$('.part', $('#parts'));
+    if (!rows.length) return;
+
+    const rank = new Map();
+    state.parts.slice().sort(byShare).forEach((p, i) => rank.set(p.id, i));
+
+    for (const row of rows) {
+      const place = rank.has(row.dataset.id) ? rank.get(row.dataset.id) : rows.length;
+      row.style.order = String(place);
+      row.style.setProperty('--i', place);
+      /* Clear any in-flight slide so the next measurement is of the real slot. */
+      row.style.transition = 'none';
+      row.style.transform = '';
+    }
+
+    if (reduced()) {
+      rows.forEach((row) => { row.style.transition = ''; });
+      return;
+    }
+
+    /* One read pass, then one write pass — measuring row by row while also
+       writing would thrash layout. */
+    const shift = rows.map((row) => (before.has(row.dataset.id)
+      ? before.get(row.dataset.id) - row.getBoundingClientRect().top
+      : 0));
+    rows.forEach((row, i) => {
+      if (Math.abs(shift[i]) > 0.5) row.style.transform = `translateY(${shift[i]}px)`;
+    });
+    requestAnimationFrame(() => {
+      rows.forEach((row) => {
+        row.style.transition = '';
+        row.style.transform = '';
+      });
+    });
   }
 
   function partRow(p, index) {
@@ -583,7 +745,7 @@
     logo.className = 'part__logo';
     logo.dataset.pick = p.id;
     logo.style.setProperty('--slice', slotColor(p.slot));
-    logo.setAttribute('aria-label', `Pilih aset untuk ${p.ticker || p.name || 'porsi ini'}`);
+    logo.setAttribute('aria-label', t('parts.pickAria', { name: p.ticker || p.name || t('parts.thisOne') }));
     logo.appendChild(tileEl(p.ticker, p.name, 'md'));
 
     const ident = document.createElement('span');
@@ -592,13 +754,13 @@
     name.className = 'part__name';
     name.type = 'text';
     name.value = p.ticker || p.name;
-    name.placeholder = 'Nama porsi';
+    name.placeholder = t('parts.namePh');
     name.maxLength = 28;
     name.dataset.field = 'name';
-    name.setAttribute('aria-label', 'Nama atau ticker porsi');
+    name.setAttribute('aria-label', t('parts.nameAria'));
     const sub = document.createElement('small');
     sub.className = 'part__sub';
-    sub.textContent = asset ? asset.name : '';
+    sub.textContent = assetName(asset);
     ident.append(name, sub);
 
     const pctWrap = document.createElement('span');
@@ -606,10 +768,10 @@
     const pct = document.createElement('input');
     pct.type = 'text';
     pct.inputMode = 'decimal';
-    pct.value = p.pct ? String(p.pct).replace('.', cur().code === 'IDR' ? ',' : '.') : '';
+    pct.value = p.pct ? String(p.pct).replace('.', separators(cur().locale).decimal) : '';
     pct.placeholder = '0';
     pct.dataset.field = 'pct';
-    pct.setAttribute('aria-label', `Persen untuk ${p.name || 'porsi ini'}`);
+    pct.setAttribute('aria-label', t('parts.pctAria', { name: p.name || t('parts.thisOne') }));
     const sign = document.createElement('span');
     sign.textContent = '%';
     pctWrap.append(pct, sign);
@@ -622,7 +784,7 @@
     del.className = 'part__x';
     del.type = 'button';
     del.dataset.remove = p.id;
-    del.setAttribute('aria-label', `Hapus ${p.name || 'porsi'}`);
+    del.setAttribute('aria-label', t('parts.removeAria', { name: p.name || t('parts.thisOne') }));
     del.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>';
 
     row.append(logo, ident, pctWrap, amount, del);
@@ -636,10 +798,10 @@
     badge.classList.toggle('is-ok', Math.abs(sum - 100) < 0.05);
     badge.classList.toggle('is-over', sum > 100.05);
     badge.title = Math.abs(sum - 100) < 0.05
-      ? 'Pas 100%.'
+      ? t('badge.exact')
       : sum > 100
-        ? `Kelebihan ${pctText(sum - 100)} dari 100%.`
-        : `Masih ada ${pctText(100 - sum)} yang belum dibagi.`;
+        ? t('badge.over', { p: pctText(sum - 100) })
+        : t('badge.under', { p: pctText(100 - sum) });
   }
 
   /* ── Actions ────────────────────────────────────────────────────────────── */
@@ -726,10 +888,9 @@
 
   function renderPickChips() {
     const host = $('#pick-chips');
-    if (host.dataset.built) return;
-    host.dataset.built = '1';
-    const opts = [{ id: 'all', label: 'Semua' }]
-      .concat(window.ASSET_CLASSES.map((c) => ({ id: c.id, label: c.label })));
+    host.textContent = '';
+    const opts = [{ id: 'all', label: t('picker.all') }]
+      .concat(window.ASSET_CLASSES.map((c) => ({ id: c.id, label: clsLabel(c.id) })));
     for (const o of opts) {
       const b = document.createElement('button');
       b.type = 'button';
@@ -754,12 +915,13 @@
 
     const list = window.ASSETS.filter((a) =>
       (pickUI.cls === 'all' || a.cls === pickUI.cls) &&
-      (!q || a.ticker.toLowerCase().includes(q) || a.name.toLowerCase().includes(q)));
+      (!q || a.ticker.toLowerCase().includes(q) ||
+        a.name.toLowerCase().includes(q) || assetName(a).toLowerCase().includes(q)));
 
     if (!list.length) {
       const empty = document.createElement('p');
       empty.className = 'parts__empty';
-      empty.textContent = 'Tidak ketemu. Coba kata kunci lain, atau pakai nama sendiri.';
+      empty.textContent = t('picker.none');
       host.appendChild(empty);
       return;
     }
@@ -770,7 +932,7 @@
         currentClass = a.cls;
         const head = document.createElement('p');
         head.className = 'picklist__group';
-        head.textContent = window.classById(a.cls).label;
+        head.textContent = clsLabel(a.cls);
         host.appendChild(head);
       }
       const row = document.createElement('button');
@@ -784,12 +946,12 @@
       const tk = document.createElement('strong');
       tk.textContent = a.ticker;
       const nm = document.createElement('small');
-      nm.textContent = a.name;
+      nm.textContent = assetName(a);
       text.append(tk, nm);
 
       const tag = document.createElement('span');
       tag.className = 'pickrow__tag';
-      tag.textContent = taken.has(a.ticker) ? 'sudah dipakai' : window.classById(a.cls).short;
+      tag.textContent = taken.has(a.ticker) ? t('picker.taken') : clsShort(a.cls);
 
       row.append(text, tag);
       host.appendChild(row);
@@ -828,7 +990,7 @@
       const asset = part ? assetOf(part) : null;
       return {
         label: d.label,
-        sub: asset ? asset.name : (d.rest ? 'sisa yang belum dibagi' : ''),
+        sub: asset ? assetName(asset) : (d.rest ? t('pie.restSub') : ''),
         pct: d.pct,
         pctText: pctText(d.pct),
         pieText: pctText((d.pct / sum) * 100),
@@ -851,14 +1013,14 @@
 
     const original = Array.from(button.childNodes);
     button.disabled = true;
-    button.textContent = 'Menyimpan…';
+    button.textContent = t('export.saving');
     try {
       await window.Exporter.save({
-        title: 'Porsi',
-        totalLabel: 'Uang yang kamu punya',
+        title: t('app.title'),
+        totalLabel: t('export.cardTotal'),
         totalText: money(state.total),
-        generatedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
-        footer: 'Dibuat dengan Porsi — kalkulator alokasi, bukan nasihat investasi.',
+        generatedAt: new Date().toLocaleDateString(cur().locale, { day: 'numeric', month: 'long', year: 'numeric' }),
+        footer: t('export.footer'),
         theme: {
           surface: token('--surface') || '#1a1a19',
           ink: token('--ink') || '#ffffff',
@@ -869,7 +1031,7 @@
       }, format);
     } catch (err) {
       console.error(err);
-      alert('Gagal menyimpan: ' + (err && err.message));
+      alert(t('export.failed', { err: (err && err.message) || '' }));
     } finally {
       button.disabled = false;
       button.textContent = '';
@@ -898,9 +1060,10 @@
       const text = document.createElement('span');
       text.className = 'ccyopt__text';
       const strong = document.createElement('strong');
-      strong.textContent = `${c.symbol} ${c.code}`;
+      /* CHF is its own symbol; "CHF CHF" would just read as a stutter. */
+      strong.textContent = c.symbol === c.code ? c.code : `${c.symbol} ${c.code}`;
       const small = document.createElement('small');
-      small.textContent = `${c.name} · ${c.country}`;
+      small.textContent = `${t('ccy.' + c.code + '.name')} · ${t('ccy.' + c.code + '.country')}`;
       text.append(strong, small);
 
       const check = document.createElement('span');
@@ -910,6 +1073,50 @@
       btn.append(flag, text, check);
       host.appendChild(btn);
     }
+  }
+
+  function renderLanguageOptions() {
+    const host = $('#lang-options');
+    host.textContent = '';
+    for (const l of i18n.LANGUAGES) {
+      const on = state.lang === l.code;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'langopt' + (on ? ' is-on' : '');
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', String(on));
+      btn.dataset.lang = l.code;
+
+      const code = document.createElement('span');
+      code.className = 'langopt__code';
+      code.textContent = l.code.toUpperCase();
+
+      const text = document.createElement('span');
+      text.className = 'langopt__text';
+      text.textContent = l.label;
+
+      btn.append(code, text);
+      host.appendChild(btn);
+    }
+  }
+
+  /** Swap the interface language and repaint everything that carries words. */
+  function setLanguage(code) {
+    if (code === state.lang) return;
+    state.lang = i18n.setLang(code);
+    applyLang();
+    /* Every row's placeholder and accessible name is now stale. */
+    signature = '';
+    renderLanguageOptions();
+    renderCurrencyOptions();
+    applyTheme(state.theme === 'light' ? 'light' : 'dark');
+    render();
+  }
+
+  /** Push the active language through the markup and the page's own metadata. */
+  function applyLang() {
+    i18n.applyLang(document);
+    document.title = `${t('app.title')} — ${t('app.tagline')}`;
   }
 
   function setCurrency(code) {
@@ -944,15 +1151,18 @@
     state.theme = next;
     document.documentElement.dataset.theme = next;
     document.documentElement.style.colorScheme = next;
-    $('#theme-label').textContent = next === 'dark' ? 'Tema gelap' : 'Tema terang';
+    $('#theme-label').textContent = t(next === 'dark' ? 'settings.themeDark' : 'settings.themeLight');
     save();
   }
 
   /* ── Wiring ─────────────────────────────────────────────────────────────── */
 
   function boot() {
+    i18n.setLang(state.lang);
+    applyLang();
     applyTheme(state.theme === 'light' ? 'light' : 'dark');
     $('#total').value = state.total ? formatInput(state.total) : '';
+    renderLanguageOptions();
     renderCurrencyOptions();
     render();
 
@@ -979,7 +1189,12 @@
           const sub = e.target.closest('.part').querySelector('.part__sub');
           if (sub) sub.textContent = '';
         }
-      } else p.pct = Math.min(1000, parseNum(e.target.value));
+      } else {
+        p.pct = Math.min(1000, parseNum(e.target.value));
+        /* Rank as you type: the list, the pie and the saved order all follow
+           the new share straight away, and `rankParts` slides the rows. */
+        sortParts();
+      }
       render();
     });
     parts.addEventListener('click', (e) => {
@@ -991,7 +1206,9 @@
     parts.addEventListener('blur', (e) => {
       const field = e.target.dataset && e.target.dataset.field;
       if (!field) return;
-      if (field === 'pct') sortParts();
+      /* Ranking already happened live, on every keystroke. What was deferred
+         while the field held focus is the rebuild — anything that changes a
+         row's contents rather than its place — so run it now. */
       setTimeout(render, 0);
     }, true);
 
@@ -1025,16 +1242,23 @@
       const btn = e.target.closest('[data-currency]');
       if (btn) setCurrency(btn.dataset.currency);
     });
+    $('#lang-options').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-lang]');
+      if (btn) setLanguage(btn.dataset.lang);
+    });
     $('#theme-toggle').addEventListener('click', () => {
       applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
       render();
     });
     $('#reset').addEventListener('click', () => {
-      if (!confirm('Hapus semua isian dan mulai dari awal?')) return;
+      if (!confirm(t('settings.resetConfirm'))) return;
+      const keepLang = state.lang;
       state = defaults();
+      state.lang = keepLang;
       applyTheme('dark');
       $('#total').value = '';
       signature = '';
+      renderLanguageOptions();
       renderCurrencyOptions();
       render();
       closeSheet();

@@ -9,18 +9,23 @@
  * brand mark in `marks.js`.
  */
 
+/*
+ * `label` and `short` here are only the fallback wording. The interface asks
+ * `i18n.js` for `cls.<id>` / `clsShort.<id>` so the names follow the language
+ * the reader picked; these strings show up only if that lookup is missing.
+ */
 window.ASSET_CLASSES = [
-  { id: 'idx', label: 'Saham Indonesia', short: 'IDX' },
-  { id: 'us', label: 'Saham Amerika', short: 'AS' },
-  { id: 'etf', label: 'ETF & Indeks', short: 'ETF' },
-  { id: 'crypto', label: 'Kripto', short: 'Kripto' },
-  { id: 'gold', label: 'Emas', short: 'Emas' },
-  { id: 'bond', label: 'Obligasi & SBN', short: 'Obligasi' },
-  { id: 'cash', label: 'Kas & Setara', short: 'Kas' },
+  { id: 'idx', label: 'IDX Stock', short: 'IDX' },
+  { id: 'us', label: 'US Stock', short: 'US' },
+  { id: 'etf', label: 'ETF & Index', short: 'ETF' },
+  { id: 'crypto', label: 'Crypto', short: 'Crypto' },
+  { id: 'gold', label: 'Gold', short: 'Gold' },
+  { id: 'bond', label: 'Bonds & Govt Notes', short: 'Bonds' },
+  { id: 'cash', label: 'Cash & Equivalents', short: 'Cash' },
 ];
 
 window.ASSETS = [
-  /* ── Saham Indonesia ────────────────────────────────────────────────────── */
+  /* ── IDX Stock ──────────────────────────────────────────────────────────── */
   { ticker: 'BBCA', name: 'Bank Central Asia', cls: 'idx', color: '#0060af' },
   { ticker: 'BBRI', name: 'Bank Rakyat Indonesia', cls: 'idx', color: '#00529c' },
   { ticker: 'BMRI', name: 'Bank Mandiri', cls: 'idx', color: '#003d79' },
@@ -32,7 +37,7 @@ window.ASSETS = [
   { ticker: 'ANTM', name: 'Aneka Tambang', cls: 'idx', color: '#d4a017' },
   { ticker: 'GOTO', name: 'GoTo Gojek Tokopedia', cls: 'idx', color: '#00aa13' },
 
-  /* ── Saham Amerika ──────────────────────────────────────────────────────── */
+  /* ── US Stock ───────────────────────────────────────────────────────────── */
   { ticker: 'AAPL', name: 'Apple', cls: 'us', color: '#555555' },
   { ticker: 'MSFT', name: 'Microsoft', cls: 'us', color: '#00a4ef' },
   { ticker: 'NVDA', name: 'NVIDIA', cls: 'us', color: '#76b900' },
