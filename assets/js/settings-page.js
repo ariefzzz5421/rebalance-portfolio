@@ -13,7 +13,7 @@ function renderChoices(){
  const lh=document.getElementById('language-choices');lh.textContent='';Object.entries(prefs.languages).forEach(([code,l])=>lh.appendChild(languageButton(code,l,current.language)));
 }
 document.getElementById('currency-choices').addEventListener('click',e=>{const b=e.target.closest('[data-currency]');if(!b)return;prefs.setCurrency(b.dataset.currency);renderChoices();});
-document.getElementById('language-choices').addEventListener('click',e=>{const b=e.target.closest('[data-language]');if(!b)return;prefs.setLanguage(b.dataset.language);renderChoices();});
+document.getElementById('language-choices').addEventListener('click',e=>{const b=e.target.closest('[data-language]');if(!b)return;prefs.setLanguage(b.dataset.language);location.reload();});
 document.getElementById('reset-data').addEventListener('click',()=>{if(!confirm('Hapus semua isian dan mulai dari awal?'))return;localStorage.removeItem(STORE);localStorage.removeItem('porsi.preferences.v1');location.href='index.html';});
 renderChoices();
 })();
