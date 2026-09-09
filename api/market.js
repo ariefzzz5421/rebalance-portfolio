@@ -7,7 +7,9 @@ function metric(points,endPoint,months){const target=endPoint.t-months*30.4375*8
 async function fetchSymbol(symbol,detailed){
   const interval=detailed?'1d':'1mo';
   const url=`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=10y&interval=${interval}&includeAdjustedClose=true&events=history`;
-  const r=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 Porsi/1.2','Accept':'application/json'}});
+  const options={headers:{'User-Agent':'Mozilla/5.0 Porsi/1.3','Accept':'application/json'}};
+  if(typeof AbortSignal!=='undefined'&&AbortSignal.timeout)options.signal=AbortSignal.timeout(10000);
+  const r=await fetch(url,options);
   if(!r.ok)throw new Error(`Yahoo ${r.status}`);
   const json=await r.json(),result=json&&json.chart&&json.chart.result&&json.chart.result[0];
   if(!result)throw new Error((json&&json.chart&&json.chart.error&&json.chart.error.description)||'No market data');
@@ -18,18 +20,19 @@ async function fetchSymbol(symbol,detailed){
     if(Number.isFinite(close)&&close>0)chartPoints.push({t,v:Number(close.toFixed(6))});
     if(Number.isFinite(adjusted)&&adjusted>0)returnPoints.push({t,v:Number(adjusted.toFixed(6))});
   }
-  const meta=result.meta||{},live=Number(meta.regularMarketPrice),chartLast=chartPoints[chartPoints.length-1],returnLast=returnPoints[returnPoints.length-1];
-  const endTime=(Number(meta.regularMarketTime)||Math.floor(((chartLast||returnLast)||{}).t/1000))*1000;
-  const livePrice=Number.isFinite(live)&&live>0?live:(chartLast&&chartLast.v);
+  const meta=result.meta||{},live=Number(meta.regularMarketPrice),chartLast=chartPoints[chartPoints.length-1],returnLast=returnPoints[returnPoints.length-1],fallback=chartLast||returnLast;
+  const endTime=(Number(meta.regularMarketTime)||Math.floor((fallback&&fallback.t||0)/1000))*1000,livePrice=Number.isFinite(live)&&live>0?live:(chartLast&&chartLast.v);
   if(!Number.isFinite(livePrice)||!endTime)throw new Error('No usable prices');
   if(!chartPoints.length||Math.abs(chartPoints[chartPoints.length-1].t-endTime)>3600000)chartPoints.push({t:endTime,v:Number(livePrice.toFixed(6))});
-  const adjustedEnd=returnLast?{t:endTime,v:returnLast.v}:null;
-  const previousClose=Number(meta.chartPreviousClose||meta.previousClose);
-  return {
-    symbol,price:livePrice,previousClose:Number.isFinite(previousClose)?previousClose:null,currency:meta.currency||null,exchange:meta.exchangeName||null,timezone:meta.exchangeTimezoneName||null,asOf:new Date(endTime).toISOString(),source:'Yahoo Finance',interval,
-    history:detailed?chartPoints.slice(-2600):chartPoints.slice(-121),
-    cagr:adjustedEnd?{m1:metric(returnPoints,adjustedEnd,1),y1:metric(returnPoints,adjustedEnd,12),y5:metric(returnPoints,adjustedEnd,60),y10:metric(returnPoints,adjustedEnd,120)}:{m1:null,y1:null,y5:null,y10:null}
-  };
+  const adjustedEnd=returnLast?{t:endTime,v:returnLast.v}:null,previousClose=Number(meta.chartPreviousClose||meta.previousClose);
+  return {symbol,price:livePrice,previousClose:Number.isFinite(previousClose)?previousClose:null,currency:meta.currency||null,exchange:meta.exchangeName||null,timezone:meta.exchangeTimezoneName||null,asOf:new Date(endTime).toISOString(),source:'Yahoo Finance',interval,history:detailed?chartPoints.slice(-2600):chartPoints.slice(-121),cagr:adjustedEnd?{m1:metric(returnPoints,adjustedEnd,1),y1:metric(returnPoints,adjustedEnd,12),y5:metric(returnPoints,adjustedEnd,60),y10:metric(returnPoints,adjustedEnd,120)}:{m1:null,y1:null,y5:null,y10:null}};
+}
+
+async function fetchWithLimit(symbols,detailed,limit){
+  const data={},queue=symbols.slice();
+  async function worker(){while(queue.length){const symbol=queue.shift();try{data[symbol]=await fetchSymbol(symbol,detailed);}catch(err){data[symbol]={symbol,error:err&&err.message||'Unavailable'};}}}
+  await Promise.all(Array.from({length:Math.min(limit,symbols.length)},worker));
+  return data;
 }
 
 module.exports=async function handler(req,res){
@@ -38,8 +41,7 @@ module.exports=async function handler(req,res){
   if(!symbols.length||symbols.some(s=>!VALID.test(s)))return res.status(400).json({error:'Invalid symbol'});
   const detailed=String(req.query.detail||'')==='1'&&symbols.length===1;
   try{
-    const settled=await Promise.allSettled(symbols.map(s=>fetchSymbol(s,detailed))),data={};
-    settled.forEach((r,i)=>{data[symbols[i]]=r.status==='fulfilled'?r.value:{symbol:symbols[i],error:r.reason&&r.reason.message||'Unavailable'};});
+    const data=await fetchWithLimit(symbols,detailed,detailed?1:6);
     res.setHeader('Cache-Control','s-maxage=900, stale-while-revalidate=3600');
     return res.status(200).json({data,source:'Yahoo Finance historical chart API',detail:detailed,method:'Chart uses raw market close; CAGR uses adjusted close where available.'});
   }catch(err){return res.status(502).json({error:err.message||'Market data unavailable'});}
