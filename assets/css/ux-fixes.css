@@ -1,0 +1,23 @@
+/* Small performance + interaction overrides. */
+.sidebar{backdrop-filter:none;-webkit-backdrop-filter:none}
+.choice-btn,.sidebar__link,.sidebar__theme-btn,.chart-range,.finance-link{touch-action:manipulation}
+.pref-flag{overflow:hidden;padding:0;background:var(--surface-3)}
+.pref-flag img{width:100%;height:100%;display:block;object-fit:cover;border-radius:8px}
+.language-grid .pref-flag img[src$="globe.svg"]{object-fit:contain;padding:7px;color:var(--accent)}
+.ccy__flag img{width:100%;height:100%;display:block;object-fit:cover;border-radius:3px}
+.asset-chart{cursor:crosshair;touch-action:none;outline:none}
+.asset-chart:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:12px}
+.asset-chart-wrap{isolation:isolate}
+.chart-tooltip{position:absolute;z-index:4;min-width:150px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:12px;background:color-mix(in oklab,var(--surface-2) 96%,transparent);box-shadow:var(--shadow);pointer-events:none;transform:translate(-50%,-110%);font-variant-numeric:tabular-nums;opacity:0;transition:opacity .1s ease}
+.chart-tooltip.is-on{opacity:1}
+.chart-tooltip strong{display:block;font-size:13px;color:var(--ink)}
+.chart-tooltip span{display:block;margin-top:2px;font-size:10.5px;color:var(--muted)}
+.chart-tooltip .pos{color:var(--good)}.chart-tooltip .neg{color:var(--crit)}
+.chart-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.chart-stat{padding:9px 11px;border-radius:11px;background:var(--surface-3)}
+.chart-stat span{display:block;font-size:9.5px;color:var(--muted)}
+.chart-stat strong{display:block;margin-top:2px;font-size:12px;font-variant-numeric:tabular-nums}
+.asset-chart-live{display:inline-flex;align-items:center;gap:7px;margin-top:6px;color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
+.asset-chart-live::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px color-mix(in oklab,var(--good) 15%,transparent)}
+@media(max-width:760px){.chart-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.chart-tooltip{min-width:132px}}
+@media(prefers-reduced-motion:reduce){.choice-btn,.sidebar__link,.sidebar__theme-btn,.chart-range,.chart-tooltip{transition:none!important}}
