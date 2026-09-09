@@ -7,19 +7,22 @@
   };
   let selected=null;
   const $=(s,r)=>(r||document).querySelector(s);
-
   function uid(){return 'p'+Math.random().toString(36).slice(2,8);}
+  function buildRow(ticker,name,pct){
+    const row=document.createElement('div');row.className='strategy-modal__row';
+    const left=document.createElement('div');left.className='strategy-modal__asset';
+    if(window.assetIconEl)left.appendChild(window.assetIconEl(ticker,'md'));
+    const text=document.createElement('div');text.className='strategy-modal__identity';
+    const tk=document.createElement('strong');tk.textContent=ticker;
+    const nm=document.createElement('span');nm.textContent=name;
+    text.append(tk,nm);left.appendChild(text);
+    const value=document.createElement('span');value.className='strategy-modal__pct';value.textContent=pct+'%';
+    row.append(left,value);return row;
+  }
   function openStrategy(key){
-    const s=STRATEGIES[key]; if(!s)return;
-    selected=key;
-    $('#strategy-title').textContent=s.title;
-    $('#strategy-subtitle').textContent=s.subtitle;
-    const host=$('#strategy-list');host.textContent='';
-    s.parts.forEach(([ticker,name,pct])=>{
-      const row=document.createElement('div');row.className='strategy-modal__row';
-      row.innerHTML=`<div><strong>${ticker}</strong><span>${name}</span></div><span class="strategy-modal__pct">${pct}%</span>`;
-      host.appendChild(row);
-    });
+    const s=STRATEGIES[key];if(!s)return;selected=key;
+    $('#strategy-title').textContent=s.title;$('#strategy-subtitle').textContent=s.subtitle;
+    const host=$('#strategy-list');host.textContent='';s.parts.forEach(([ticker,name,pct])=>host.appendChild(buildRow(ticker,name,pct)));
     const sheet=$('#strategy-modal');sheet.hidden=false;document.body.classList.add('locked');requestAnimationFrame(()=>sheet.classList.add('on'));
   }
   function closeStrategy(){const sheet=$('#strategy-modal');if(!sheet)return;sheet.classList.remove('on');document.body.classList.remove('locked');setTimeout(()=>sheet.hidden=true,200);}
@@ -27,8 +30,7 @@
     const s=STRATEGIES[selected];if(!s)return;
     let prev={};try{prev=JSON.parse(localStorage.getItem(STORE)||'{}')||{};}catch{}
     const next={currency:prev.currency||'IDR',total:Number(prev.total)||0,theme:prev.theme==='light'?'light':'dark',parts:s.parts.map(([ticker,name,pct],i)=>({id:uid(),ticker,name:ticker,pct,slot:i+1}))};
-    localStorage.setItem(STORE,JSON.stringify(next));
-    location.reload();
+    localStorage.setItem(STORE,JSON.stringify(next));location.reload();
   }
   function boot(){
     document.querySelectorAll('[data-strategy]').forEach(btn=>btn.addEventListener('click',()=>openStrategy(btn.dataset.strategy)));
