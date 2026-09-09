@@ -1,8 +1,17 @@
 <!doctype html>
-<html lang="id" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Settings — Porsi</title><meta name="color-scheme" content="dark light"><script>try{const s=JSON.parse(localStorage.getItem('porsi.v1')||'{}');if(s.theme)document.documentElement.dataset.theme=s.theme}catch{}</script><link rel="stylesheet" href="assets/css/font.css"><link rel="stylesheet" href="assets/css/styles.css"><link rel="stylesheet" href="assets/css/features.css"></head>
+<html lang="id" data-theme="dark">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Settings — Porsi</title><meta name="color-scheme" content="dark light">
+<script>try{const s=JSON.parse(localStorage.getItem('porsi.v1')||'{}');if(s.theme)document.documentElement.dataset.theme=s.theme}catch{}</script>
+<link rel="stylesheet" href="assets/css/font.css"><link rel="stylesheet" href="assets/css/styles.css"><link rel="stylesheet" href="assets/css/features.css">
+</head>
 <body data-page="settings"><div class="glow" aria-hidden="true"></div><header class="top top--plain"><p class="wordmark">Porsi</p></header>
-<main class="wrap"><section class="page-head"><div><div class="page-head__eyebrow">Preferences</div><h1>Settings</h1><p>Pengaturan sekarang punya halaman sendiri. Semua perubahan tetap disimpan lokal di browser ini.</p></div></section>
-<section class="settings-grid"><div class="settings-card"><h2>Mata uang</h2><p>Mengubah format tampilan, bukan mengonversi nominal portofolio.</p><div class="choice-row" id="currency-choices"><button class="choice-btn" data-currency="IDR"><strong>Rp · IDR</strong><span>Rupiah Indonesia</span></button><button class="choice-btn" data-currency="USD"><strong>$ · USD</strong><span>US Dollar</span></button></div></div>
-<div class="settings-card"><h2>Tampilan</h2><p>Pilih tema interface Porsi.</p><div class="choice-row" id="theme-choices"><button class="choice-btn" data-theme-choice="dark"><strong>Dark</strong><span>Tema gelap</span></button><button class="choice-btn" data-theme-choice="light"><strong>Light</strong><span>Tema terang</span></button></div></div>
-<div class="settings-card danger-zone"><h2>Data lokal</h2><p>Reset akan menghapus nominal dan seluruh komposisi portofolio yang tersimpan di browser.</p><button class="btn" id="reset-data" type="button">Hapus semua & mulai lagi</button></div></section></main>
-<script src="assets/js/nav.js"></script><script src="assets/js/settings-page.js"></script></body></html>
+<main class="wrap">
+<section class="page-head"><div><div class="page-head__eyebrow">Preferences</div><h1>Settings</h1><p>Atur mata uang, bahasa, dan data lokal. Mode gelap/terang sekarang tersedia sebagai tombol ikon tepat di bawah tombol Settings pada sidebar.</p></div></section>
+<section class="settings-grid">
+  <div class="settings-card settings-card--wide"><h2>Mata uang</h2><p>Mengubah simbol dan format tampilan saja — nominal portofolio tidak dikonversi otomatis.</p><div class="currency-grid" id="currency-choices" aria-label="Mata uang"></div></div>
+  <div class="settings-card"><h2>Bahasa</h2><p>Pilih bahasa antarmuka yang ingin digunakan.</p><div class="language-grid" id="language-choices" aria-label="Bahasa"></div></div>
+  <div class="settings-card danger-zone"><h2>Data lokal</h2><p>Reset akan menghapus nominal dan seluruh komposisi portofolio yang tersimpan di browser.</p><button class="btn" id="reset-data" type="button">Hapus semua & mulai lagi</button></div>
+</section></main>
+<script src="assets/js/nav.js"></script><script src="assets/js/preferences.js"></script><script src="assets/js/settings-page.js"></script>
+</body></html>
