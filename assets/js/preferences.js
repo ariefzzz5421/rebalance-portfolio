@@ -14,39 +14,20 @@
   function writeJson(key,value){localStorage.setItem(key,JSON.stringify(value));}
   function derive(){const state=readJson(STORE),saved=readJson(PREF);return{currency:currencies[saved.currency]?saved.currency:(state.currency==='USD'?'USD':'IDR'),language:languages[saved.language]?saved.language:'id'};}
   function get(){return derive();}
-  function setCurrency(code){
-    if(!currencies[code])return;
-    const pref=derive();pref.currency=code;writeJson(PREF,pref);
-    const state=readJson(STORE);state.currency=currencies[code].compat;writeJson(STORE,state);
-    window.dispatchEvent(new CustomEvent('porsi:preferences',{detail:pref}));
-  }
+  function setCurrency(code){if(!currencies[code])return;const pref=derive();pref.currency=code;writeJson(PREF,pref);const state=readJson(STORE);state.currency=currencies[code].compat;writeJson(STORE,state);window.dispatchEvent(new CustomEvent('porsi:preferences',{detail:pref}));}
   function setLanguage(code){if(!languages[code])return;const pref=derive();pref.language=code;writeJson(PREF,pref);document.documentElement.lang=code;window.dispatchEvent(new CustomEvent('porsi:preferences',{detail:pref}));}
+  function assignText(el,value){if(el&&el.textContent!==value)el.textContent=value;}
   function patchPortfolio(){
     if(document.body&&document.body.dataset.page!=='portfolio')return;
-    const pref=derive(),c=currencies[pref.currency];
-    document.documentElement.lang=pref.language;
-    const code=document.getElementById('ccy-code'),symbol=document.getElementById('symbol'),flag=document.getElementById('ccy-flag');
-    if(code)code.textContent=c.code;if(symbol)symbol.textContent=c.symbol;if(flag)flag.textContent=c.flag;
-    if(c.compat==='USD'&&c.code!=='USD'){
-      document.querySelectorAll('.part__amount,.tip strong').forEach(el=>{if(/^\$\s/.test(el.textContent))el.textContent=el.textContent.replace(/^\$\s/,c.symbol+' ');});
-    }
+    const pref=derive(),c=currencies[pref.currency];document.documentElement.lang=pref.language;
+    assignText(document.getElementById('ccy-code'),c.code);assignText(document.getElementById('symbol'),c.symbol);assignText(document.getElementById('ccy-flag'),c.flag);
+    if(c.compat==='USD'&&c.code!=='USD')document.querySelectorAll('.part__amount,.tip strong').forEach(el=>{if(/^\$\s/.test(el.textContent))el.textContent=el.textContent.replace(/^\$\s/,c.symbol+' ');});
   }
   function wrapExporter(){
-    if(!window.Exporter||window.Exporter.__porsiPrefs)return;
-    const original=window.Exporter.save;
-    window.Exporter.save=async function(data,format){
-      const pref=derive(),c=currencies[pref.currency];
-      if(c.compat==='USD'&&c.code!=='USD'){
-        const cloned=JSON.parse(JSON.stringify(data));
-        const swap=v=>typeof v==='string'?v.replace(/^\$\s/,c.symbol+' '):v;
-        cloned.totalText=swap(cloned.totalText);(cloned.slices||[]).forEach(s=>{s.amountText=swap(s.amountText);});
-        return original.call(this,cloned,format);
-      }
-      return original.call(this,data,format);
-    };
-    window.Exporter.__porsiPrefs=true;
+    if(!window.Exporter||window.Exporter.__porsiPrefs)return;const original=window.Exporter.save;
+    window.Exporter.save=async function(data,format){const pref=derive(),c=currencies[pref.currency];if(c.compat==='USD'&&c.code!=='USD'){const cloned=JSON.parse(JSON.stringify(data));const swap=v=>typeof v==='string'?v.replace(/^\$\s/,c.symbol+' '):v;cloned.totalText=swap(cloned.totalText);(cloned.slices||[]).forEach(s=>{s.amountText=swap(s.amountText);});return original.call(this,cloned,format);}return original.call(this,data,format);};window.Exporter.__porsiPrefs=true;
   }
-  function boot(){document.documentElement.lang=derive().language;patchPortfolio();wrapExporter();if(document.body){const mo=new MutationObserver(()=>patchPortfolio());mo.observe(document.body,{subtree:true,childList:true,characterData:true});}}
+  function boot(){document.documentElement.lang=derive().language;patchPortfolio();wrapExporter();if(document.body&&document.body.dataset.page==='portfolio'){let queued=false;const mo=new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;patchPortfolio();});});mo.observe(document.body,{subtree:true,childList:true,characterData:true});}}
   window.PORSI_PREFS={currencies,languages,get,setCurrency,setLanguage,patchPortfolio};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
