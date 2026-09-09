@@ -12,17 +12,23 @@ async function fetchSymbol(symbol,detailed){
   const json=await r.json(),result=json&&json.chart&&json.chart.result&&json.chart.result[0];
   if(!result)throw new Error((json&&json.chart&&json.chart.error&&json.chart.error.description)||'No market data');
   const ts=result.timestamp||[],quote=(result.indicators&&result.indicators.quote&&result.indicators.quote[0]&&result.indicators.quote[0].close)||[],adj=(result.indicators&&result.indicators.adjclose&&result.indicators.adjclose[0]&&result.indicators.adjclose[0].adjclose)||[];
-  const points=[];
-  for(let i=0;i<ts.length;i++){const v=Number.isFinite(adj[i])?adj[i]:quote[i];if(Number.isFinite(v)&&v>0)points.push({t:ts[i]*1000,v:Number(v.toFixed(6))});}
-  const meta=result.meta||{},live=Number(meta.regularMarketPrice),last=points[points.length-1];
-  const endPoint=last?{t:(Number(meta.regularMarketTime)||Math.floor(last.t/1000))*1000,v:Number.isFinite(live)&&live>0?live:last.v}:null;
-  if(!endPoint)throw new Error('No usable prices');
-  if(!points.length||Math.abs(points[points.length-1].t-endPoint.t)>3600000)points.push({t:endPoint.t,v:Number(endPoint.v.toFixed(6))});
+  const chartPoints=[],returnPoints=[];
+  for(let i=0;i<ts.length;i++){
+    const close=Number(quote[i]),adjusted=Number.isFinite(adj[i])?Number(adj[i]):close,t=ts[i]*1000;
+    if(Number.isFinite(close)&&close>0)chartPoints.push({t,v:Number(close.toFixed(6))});
+    if(Number.isFinite(adjusted)&&adjusted>0)returnPoints.push({t,v:Number(adjusted.toFixed(6))});
+  }
+  const meta=result.meta||{},live=Number(meta.regularMarketPrice),chartLast=chartPoints[chartPoints.length-1],returnLast=returnPoints[returnPoints.length-1];
+  const endTime=(Number(meta.regularMarketTime)||Math.floor(((chartLast||returnLast)||{}).t/1000))*1000;
+  const livePrice=Number.isFinite(live)&&live>0?live:(chartLast&&chartLast.v);
+  if(!Number.isFinite(livePrice)||!endTime)throw new Error('No usable prices');
+  if(!chartPoints.length||Math.abs(chartPoints[chartPoints.length-1].t-endTime)>3600000)chartPoints.push({t:endTime,v:Number(livePrice.toFixed(6))});
+  const adjustedEnd=returnLast?{t:endTime,v:returnLast.v}:null;
   const previousClose=Number(meta.chartPreviousClose||meta.previousClose);
   return {
-    symbol,price:endPoint.v,previousClose:Number.isFinite(previousClose)?previousClose:null,currency:meta.currency||null,exchange:meta.exchangeName||null,timezone:meta.exchangeTimezoneName||null,asOf:new Date(endPoint.t).toISOString(),source:'Yahoo Finance',interval,
-    history:detailed?points.slice(-2600):points.slice(-121),
-    cagr:{m1:metric(points,endPoint,1),y1:metric(points,endPoint,12),y5:metric(points,endPoint,60),y10:metric(points,endPoint,120)}
+    symbol,price:livePrice,previousClose:Number.isFinite(previousClose)?previousClose:null,currency:meta.currency||null,exchange:meta.exchangeName||null,timezone:meta.exchangeTimezoneName||null,asOf:new Date(endTime).toISOString(),source:'Yahoo Finance',interval,
+    history:detailed?chartPoints.slice(-2600):chartPoints.slice(-121),
+    cagr:adjustedEnd?{m1:metric(returnPoints,adjustedEnd,1),y1:metric(returnPoints,adjustedEnd,12),y5:metric(returnPoints,adjustedEnd,60),y10:metric(returnPoints,adjustedEnd,120)}:{m1:null,y1:null,y5:null,y10:null}
   };
 }
 
@@ -35,6 +41,6 @@ module.exports=async function handler(req,res){
     const settled=await Promise.allSettled(symbols.map(s=>fetchSymbol(s,detailed))),data={};
     settled.forEach((r,i)=>{data[symbols[i]]=r.status==='fulfilled'?r.value:{symbol:symbols[i],error:r.reason&&r.reason.message||'Unavailable'};});
     res.setHeader('Cache-Control','s-maxage=900, stale-while-revalidate=3600');
-    return res.status(200).json({data,source:'Yahoo Finance historical chart API',detail:detailed,method:'CAGR is annualized from the nearest adjusted-close observation to each lookback date.'});
+    return res.status(200).json({data,source:'Yahoo Finance historical chart API',detail:detailed,method:'Chart uses raw market close; CAGR uses adjusted close where available.'});
   }catch(err){return res.status(502).json({error:err.message||'Market data unavailable'});}
 };
