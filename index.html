@@ -12,121 +12,16 @@
 <link rel="stylesheet" href="assets/css/features.css">
 </head>
 <body data-page="portfolio">
-
 <div class="glow" aria-hidden="true"></div>
-
-<header class="top top--plain">
-  <p class="wordmark">Porsi</p>
-  <button id="open-settings" type="button" hidden aria-hidden="true" tabindex="-1">Pengaturan</button>
-</header>
-
+<header class="top top--plain"><p class="wordmark">Porsi</p><button id="open-settings" type="button" hidden aria-hidden="true" tabindex="-1">Pengaturan</button></header>
 <main class="wrap">
-
-  <section class="hero">
-    <label class="hero__label" for="total">Uang yang kamu punya</label>
-    <div class="hero__field">
-      <button class="ccy" id="ccy-chip" type="button" aria-label="Buka pengaturan mata uang">
-        <span class="ccy__flag" id="ccy-flag" aria-hidden="true"></span>
-        <span class="ccy__code" id="ccy-code">IDR</span>
-      </button>
-      <span class="hero__symbol" id="symbol">Rp</span>
-      <input id="total" type="text" inputmode="decimal" placeholder="0" autocomplete="off"
-        aria-describedby="hero-note">
-    </div>
-    <p class="hero__note" id="hero-note">Ketik nominalnya — tiap porsi di bawah langsung terhitung.</p>
-  </section>
-
-  <section class="strategy-strip" aria-label="Preset strategi portofolio">
-    <div class="strategy-strip__copy">
-      <strong>Mulai lebih cepat dengan strategi preset</strong>
-      <span>Pilih strategi, lalu isi nominal portofolio. Semua persentase langsung tersusun.</span>
-    </div>
-    <div class="strategy-strip__actions">
-      <button class="btn strategy-btn" type="button" data-strategy="high"><span class="strategy-dot"></span>Strategy 1 · High Risk</button>
-      <button class="btn strategy-btn" type="button" data-strategy="conservative"><span class="strategy-dot"></span>Strategy 2 · Conservative</button>
-    </div>
-  </section>
-
-  <section class="board">
-    <div class="panel panel--chart">
-      <div class="pie-wrap" id="pie"></div>
-    </div>
-
-    <div class="panel panel--parts">
-      <div class="parts__head">
-        <h2 class="parts__title">Porsi</h2>
-        <span class="pctbadge" id="pct-badge">0%</span>
-      </div>
-
-      <div class="parts" id="parts"></div>
-
-      <div class="parts__actions">
-        <button class="btn btn--main" type="button" id="add">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>
-          Tambah porsi
-        </button>
-        <button class="btn" type="button" id="even">Bagi rata</button>
-        <button class="btn" type="button" id="fit">Paskan 100%</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="export">
-    <div class="export__text">
-      <strong>Simpan setup ini</strong>
-      <span>Unduh sebagai gambar atau PDF — lengkap dengan pie dan rinciannya.</span>
-    </div>
-    <div class="export__actions">
-      <button class="btn" type="button" id="dl-jpg">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.6" fill="currentColor"/><path d="M4.5 16.5 9.5 12l3.5 3 2.5-2 4 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        JPG
-      </button>
-      <button class="btn btn--main" type="button" id="dl-pdf">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
-        PDF
-      </button>
-    </div>
-  </section>
+  <section class="hero"><label class="hero__label" for="total">Uang yang kamu punya</label><div class="hero__field"><button class="ccy" id="ccy-chip" type="button" aria-label="Buka pengaturan mata uang"><span class="ccy__flag" id="ccy-flag" aria-hidden="true"></span><span class="ccy__code" id="ccy-code">IDR</span></button><span class="hero__symbol" id="symbol">Rp</span><input id="total" type="text" inputmode="decimal" placeholder="0" autocomplete="off" aria-describedby="hero-note"></div><p class="hero__note" id="hero-note">Ketik nominalnya — tiap porsi di bawah langsung terhitung.</p></section>
+  <section class="strategy-strip" aria-label="Preset strategi portofolio"><div class="strategy-strip__copy"><strong>Mulai lebih cepat dengan strategi preset</strong><span>Pilih strategi, lalu isi nominal portofolio. Semua persentase langsung tersusun.</span></div><div class="strategy-strip__actions"><button class="btn strategy-btn" type="button" data-strategy="high"><span class="strategy-dot"></span>Strategy 1 · High Risk</button><button class="btn strategy-btn" type="button" data-strategy="conservative"><span class="strategy-dot"></span>Strategy 2 · Conservative</button></div></section>
+  <section class="board"><div class="panel panel--chart"><div class="pie-wrap" id="pie"></div></div><div class="panel panel--parts"><div class="parts__head"><h2 class="parts__title">Porsi</h2><span class="pctbadge" id="pct-badge">0%</span></div><div class="parts" id="parts"></div><div class="parts__actions"><button class="btn btn--main" type="button" id="add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></svg>Tambah porsi</button><button class="btn" type="button" id="even">Bagi rata</button><button class="btn" type="button" id="fit">Paskan 100%</button></div></div></section>
+  <section class="export"><div class="export__text"><strong>Simpan setup ini</strong><span>Unduh sebagai gambar atau PDF — lengkap dengan pie dan rinciannya.</span></div><div class="export__actions"><button class="btn" type="button" id="dl-jpg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="14" rx="2.4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="10" r="1.6" fill="currentColor"/><path d="M4.5 16.5 9.5 12l3.5 3 2.5-2 4 3.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>JPG</button><button class="btn btn--main" type="button" id="dl-pdf"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5v11m0 0 4-4m-4 4-4-4" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 16.5v2a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>PDF</button></div></section>
 </main>
-
-<div class="sheet" id="settings" hidden>
-  <div class="sheet__scrim" data-close></div>
-  <div class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="settings-h">
-    <div class="sheet__head">
-      <h2 id="settings-h">Pengaturan</h2>
-      <button class="gear gear--sm" type="button" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button>
-    </div>
-    <div class="sheet__group"><h3>Mata uang</h3><div class="ccyopts" id="ccy-options" role="radiogroup" aria-label="Mata uang"></div><p class="sheet__note">Mengganti mata uang hanya mengubah simbol dan format angkanya — nominal yang sudah kamu ketik tidak dikonversi.</p></div>
-    <div class="sheet__group"><h3>Tampilan</h3><button class="rowbtn" type="button" id="theme-toggle"><span id="theme-label">Tema gelap</span><span class="rowbtn__icon" aria-hidden="true"><svg viewBox="0 0 24 24" class="i-sun"><circle cx="12" cy="12" r="4.2" fill="currentColor"/></svg><svg viewBox="0 0 24 24" class="i-moon"><path d="M20 14.4A8.6 8.6 0 0 1 9.6 4a8.6 8.6 0 1 0 10.4 10.4Z" fill="currentColor"/></svg></span></button></div>
-    <div class="sheet__group"><h3>Data</h3><button class="rowbtn rowbtn--danger" type="button" id="reset">Hapus semua &amp; mulai lagi</button><p class="sheet__note">Semua isian tersimpan di browser ini saja.</p></div>
-  </div>
-</div>
-
-<div class="sheet" id="strategy-modal" hidden>
-  <div class="sheet__scrim" data-close-strategy></div>
-  <div class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="strategy-title">
-    <div class="sheet__head"><div><h2 id="strategy-title">Strategy</h2><p class="sheet__note" id="strategy-subtitle"></p></div><button class="gear gear--sm" type="button" data-close-strategy aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button></div>
-    <div class="strategy-modal__list" id="strategy-list"></div>
-    <p class="strategy-modal__note">Menerapkan strategi akan mengganti porsi yang sedang aktif, tetapi tetap mempertahankan nominal, mata uang, dan tema kamu.</p>
-    <div class="strategy-modal__actions"><button class="btn" type="button" data-close-strategy>Batal</button><button class="btn btn--main" type="button" id="apply-strategy">Gunakan strategi</button></div>
-  </div>
-</div>
-
-<div class="sheet" id="picker" hidden>
-  <div class="sheet__scrim" data-close></div>
-  <div class="sheet__panel sheet__panel--picker" role="dialog" aria-modal="true" aria-labelledby="picker-h">
-    <div class="sheet__head"><h2 id="picker-h">Pilih aset</h2><button class="gear gear--sm" type="button" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button></div>
-    <div class="pickbar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.8 15.8 20.5 20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="pick-search" type="search" placeholder="Cari ticker atau nama — BBCA, NVDA, BTC…" autocomplete="off"></div>
-    <div class="pickchips" id="pick-chips"></div><div class="picklist" id="pick-list"></div><div class="pickfoot"><button class="btn" type="button" id="pick-custom">Pakai nama sendiri</button></div>
-  </div>
-</div>
-
-<script src="assets/js/marks.js"></script>
-<script src="assets/js/assets.js"></script>
-<script src="assets/js/logo-files.js"></script>
-<script src="assets/js/export.js"></script>
-<script src="assets/js/app.js"></script>
-<script src="assets/js/nav.js"></script>
-<script src="assets/js/features.js"></script>
-</body>
-</html>
+<div class="sheet" id="settings" hidden><div class="sheet__scrim" data-close></div><div class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="settings-h"><div class="sheet__head"><h2 id="settings-h">Pengaturan</h2><button class="gear gear--sm" type="button" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button></div><div class="sheet__group"><h3>Mata uang</h3><div class="ccyopts" id="ccy-options" role="radiogroup" aria-label="Mata uang"></div><p class="sheet__note">Mengganti mata uang hanya mengubah simbol dan format angkanya — nominal yang sudah kamu ketik tidak dikonversi.</p></div><div class="sheet__group"><h3>Tampilan</h3><button class="rowbtn" type="button" id="theme-toggle"><span id="theme-label">Tema gelap</span><span class="rowbtn__icon" aria-hidden="true"><svg viewBox="0 0 24 24" class="i-sun"><circle cx="12" cy="12" r="4.2" fill="currentColor"/></svg><svg viewBox="0 0 24 24" class="i-moon"><path d="M20 14.4A8.6 8.6 0 0 1 9.6 4a8.6 8.6 0 1 0 10.4 10.4Z" fill="currentColor"/></svg></span></button></div><div class="sheet__group"><h3>Data</h3><button class="rowbtn rowbtn--danger" type="button" id="reset">Hapus semua &amp; mulai lagi</button><p class="sheet__note">Semua isian tersimpan di browser ini saja.</p></div></div></div>
+<div class="sheet" id="strategy-modal" hidden><div class="sheet__scrim" data-close-strategy></div><div class="sheet__panel" role="dialog" aria-modal="true" aria-labelledby="strategy-title"><div class="sheet__head"><div><h2 id="strategy-title">Strategy</h2><p class="sheet__note" id="strategy-subtitle"></p></div><button class="gear gear--sm" type="button" data-close-strategy aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button></div><div class="strategy-modal__list" id="strategy-list"></div><p class="strategy-modal__note">Menerapkan strategi akan mengganti porsi yang sedang aktif, tetapi tetap mempertahankan nominal, mata uang, dan tema kamu.</p><div class="strategy-modal__actions"><button class="btn" type="button" data-close-strategy>Batal</button><button class="btn btn--main" type="button" id="apply-strategy">Gunakan strategi</button></div></div></div>
+<div class="sheet" id="picker" hidden><div class="sheet__scrim" data-close></div><div class="sheet__panel sheet__panel--picker" role="dialog" aria-modal="true" aria-labelledby="picker-h"><div class="sheet__head"><h2 id="picker-h">Pilih aset</h2><button class="gear gear--sm" type="button" data-close aria-label="Tutup"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></button></div><div class="pickbar"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15.8 15.8 20.5 20.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><input id="pick-search" type="search" placeholder="Cari ticker atau nama — BBCA, NVDA, BTC…" autocomplete="off"></div><div class="pickchips" id="pick-chips"></div><div class="picklist" id="pick-list"></div><div class="pickfoot"><button class="btn" type="button" id="pick-custom">Pakai nama sendiri</button></div></div></div>
+<script src="assets/js/marks.js"></script><script src="assets/js/assets.js"></script><script src="assets/js/logo-files.js"></script><script src="assets/js/asset-icons.js"></script><script src="assets/js/export.js"></script><script src="assets/js/app.js"></script><script src="assets/js/preferences.js"></script><script src="assets/js/nav.js"></script><script src="assets/js/features.js"></script>
+</body></html>
