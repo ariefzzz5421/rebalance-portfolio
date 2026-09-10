@@ -8,7 +8,7 @@
   }
   const items=[
     ['portfolio','index.html','Portfolio','<path d="M4 19V9m5 10V5m5 14v-7m5 7V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'],
-    ['assets','assets.html','Assets','<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.5 14.8c1.8 1.4 5.2 1.1 5.2-1.1 0-2.8-5.4-1.2-5.4-4 0-2 3-2.7 5-1.4M12 6.2v11.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'],
+    ['assets','assets.html','Assets','<path d="m12 3.5 6.3 3.6L12 10.8 5.7 7.1 12 3.5Z" fill="currentColor" opacity=".95"/><path d="m5.7 11.2 6.3 3.6 6.3-3.6M5.7 15.2 12 18.8l6.3-3.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18.6" cy="18.2" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M18.6 16.9v2.6M17.8 18.2h1.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'],
     ['settings','settings.html','Settings','<path d="M4 7h10m4 0h2M4 17h4m4 0h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="2"/>']
   ];
   function read(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')||{};}catch{return {};}}
