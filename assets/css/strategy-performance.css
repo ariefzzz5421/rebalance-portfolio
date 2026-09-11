@@ -1,0 +1,17 @@
+/* Strategy performance cards: compact, stable, and history-aware. */
+.strategy-summary__metrics--performance{display:grid;grid-template-columns:repeat(3,minmax(110px,1fr));gap:10px;margin-top:0;align-items:stretch;overflow:visible}
+.strategy-performance-card{position:relative;min-width:110px;min-height:56px;padding:10px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;align-items:baseline;font-variant-numeric:tabular-nums;outline:none}
+.strategy-performance-card__period{font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
+.strategy-performance-card>strong{font-size:19px;font-weight:750;line-height:1.1;text-align:right;white-space:nowrap;min-width:72px;letter-spacing:-.015em}
+.strategy-performance-card>small{grid-column:1/-1;margin-top:5px;color:var(--muted);font-size:9.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strategy-performance-card.pos>strong{color:var(--good)}
+.strategy-performance-card.neg>strong{color:var(--crit)}
+.strategy-performance-card.zero>strong{color:var(--muted)}
+.strategy-performance-card.na>strong{color:var(--muted);opacity:.78}
+.strategy-performance-card:focus-visible{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.strategy-performance-card::after{content:attr(data-tooltip);position:absolute;z-index:80;left:50%;top:calc(100% + 8px);width:min(320px,72vw);padding:9px 11px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2);box-shadow:var(--shadow);color:var(--ink-2);font-size:10.5px;line-height:1.45;text-align:left;white-space:normal;opacity:0;pointer-events:none;transform:translate(-50%,-4px);transition:opacity .12s ease,transform .12s ease}
+.strategy-performance-card:hover::after,.strategy-performance-card:focus::after{opacity:1;transform:translate(-50%,0)}
+.strategy-performance-method{margin-top:9px;color:var(--muted);font-size:9.5px;line-height:1.45}
+.strategy-performance-empty{min-height:56px;display:flex;align-items:center;color:var(--muted);font-size:11px}
+@media(max-width:560px){.strategy-summary__metrics--performance{grid-template-columns:1fr}.strategy-performance-card{width:100%;min-height:54px}.strategy-performance-card::after{left:0;transform:translate(0,-4px);width:min(300px,78vw)}.strategy-performance-card:hover::after,.strategy-performance-card:focus::after{transform:translate(0,0)}}
+@media(prefers-reduced-motion:reduce){.strategy-performance-card::after{transition:none}}
