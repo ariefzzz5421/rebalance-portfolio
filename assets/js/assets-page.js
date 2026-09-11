@@ -3,6 +3,12 @@
 const grid=document.getElementById('asset-grid'),status=document.getElementById('asset-status'),search=document.getElementById('asset-search');
 let market={},redrawTimer=0;
 const lang=()=>window.PORSI_PREFS&&window.PORSI_PREFS.get?window.PORSI_PREFS.get().language:'id';
+const STATUS={
+ id:{ok:'Market data dimuat · cache hingga 15 menit',err:'Market data tidak tersedia — asset library tetap bisa dibuka'},
+ en:{ok:'Market data loaded · cached up to 15 min',err:'Market data unavailable — the asset library still works'},
+ ja:{ok:'マーケットデータを読み込みました · 最大15分キャッシュ',err:'マーケットデータを取得できません — 資産ライブラリは引き続き利用できます'},
+ zh:{ok:'市场数据已加载 · 最长缓存15分钟',err:'市场数据暂不可用 — 资产库仍可正常浏览'}
+};
 const fmtPct=v=>v==null||!Number.isFinite(v)?'N/A':`${v>=0?'+':''}${v.toFixed(1)}%`;
 const pctClass=v=>v==null||!Number.isFinite(v)?'':v>=0?'pos':'neg';
 const metricLabel=(short,long)=>`<span class="metric-mini__label"><b>${short}</b><small>(${long})</small></span>`;
@@ -23,8 +29,8 @@ function render(){grid.innerHTML=window.ASSETS.map(card).join('');filter();reque
 function filter(){const q=(search.value||'').trim().toLowerCase();grid.querySelectorAll('.asset-card').forEach(el=>el.hidden=!!(q&&!el.dataset.search.includes(q)));scheduleRedraw();}
 async function load(){
  render();const symbols=[...new Set(window.ASSETS.map(a=>window.assetIntel(a).marketSymbol).filter(Boolean))];
- try{const r=await fetch(`/api/market?symbols=${encodeURIComponent(symbols.join(','))}`);if(!r.ok)throw new Error('Market API unavailable');const j=await r.json();market=j.data||{};status.textContent=lang()==='en'?'Market data loaded · cached up to 15 min':'Market data dimuat · cache hingga 15 menit';render();}
- catch(e){status.textContent=lang()==='en'?'Market data unavailable — the asset library still works':'Market data tidak tersedia — asset library tetap bisa dibuka';console.error(e);}
+ try{const r=await fetch(`/api/market?symbols=${encodeURIComponent(symbols.join(','))}`);if(!r.ok)throw new Error('Market API unavailable');const j=await r.json();market=j.data||{};const t=STATUS[lang()]||STATUS.en;status.textContent=t.ok;render();}
+ catch(e){const t=STATUS[lang()]||STATUS.en;status.textContent=t.err;console.error(e);}
 }
 search.addEventListener('input',filter,{passive:true});window.addEventListener('porsi:theme',scheduleRedraw);const ro=new ResizeObserver(scheduleRedraw);ro.observe(grid);load();
 })();
