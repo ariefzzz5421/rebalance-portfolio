@@ -13,6 +13,7 @@ const pct=v=>v==null||!Number.isFinite(v)?'N/A':`${v>=0?'+':''}${v.toFixed(1)}%`
 const tone=v=>v==null||!Number.isFinite(v)?'':v>=0?'pos':'neg';
 function uid(){return 'p'+Math.random().toString(36).slice(2,8);}
 function lang(){return window.PORSI_PREFS&&window.PORSI_PREFS.get?window.PORSI_PREFS.get().language:'id';}
+function chooseLabel(){return({id:'Pilih strategy',en:'Choose strategy',ja:'戦略を選択',zh:'选择策略'})[lang()]||'Choose strategy';}
 function assetMarket(ticker){const symbol=window.MARKET_SYMBOLS&&window.MARKET_SYMBOLS[ticker];return symbol&&market[symbol]&&!market[symbol].error?market[symbol]:null;}
 function assetMetric(ticker,key){const m=assetMarket(ticker),v=m&&m.cagr&&m.cagr[key];return Number.isFinite(v)?v:null;}
 function assetGrowth(ticker,key,years){
@@ -24,18 +25,14 @@ function assetGrowth(ticker,key,years){
 function strategyMetric(strategy,key){
   const years=PERIOD_YEARS[key];let weightedGrowth=0,coverage=0;
   strategy.parts.forEach(([ticker,,weight])=>{const growth=assetGrowth(ticker,key,years);if(Number.isFinite(growth)&&growth>0){weightedGrowth+=growth*weight;coverage+=weight;}});
-  // A strategy CAGR is only shown when every portfolio component has enough
-  // history for that horizon. Partial-history figures are intentionally N/A
-  // rather than silently reweighting the strategy and presenting a fake CAGR.
   if(coverage<99.5)return {value:null,coverage,growth:null};
   const portfolioGrowth=weightedGrowth/100,value=(Math.pow(portfolioGrowth,1/years)-1)*100;
   return {value:Number.isFinite(value)?value:null,coverage,growth:portfolioGrowth};
 }
 function strategyMetrics(strategy){return{y1:strategyMetric(strategy,'y1'),y5:strategyMetric(strategy,'y5'),y10:strategyMetric(strategy,'y10')};}
 function metricPill(label,m){return `<span class="strategy-metric"><small>${label}</small><strong class="${tone(m.value)}">${pct(m.value)}</strong></span>`;}
-function coverageNote(metrics){const coverage=Math.min(metrics.y1.coverage,metrics.y5.coverage,metrics.y10.coverage);return coverage>=99?'':`<span class="strategy-coverage">min ${Math.round(coverage)}% history coverage · incomplete horizons show N/A</span>`;}
 function dotMarkup(color,extraClass){return `<span class="strategy-color-dot${extraClass?' '+extraClass:''}" style="--strategy-color:${color}" aria-hidden="true"></span>`;}
-function assetHistoryText(ticker){return `1M (1 Month) ${pct(assetMetric(ticker,'m1'))} · 1Y (1 Year) ${pct(assetMetric(ticker,'y1'))} · 5Y (5 Years) ${pct(assetMetric(ticker,'y5'))} · 10Y (10 Years) ${pct(assetMetric(ticker,'y10'))}`;}
+function assetHistoryText(ticker){return `1M ${pct(assetMetric(ticker,'m1'))} · 1Y ${pct(assetMetric(ticker,'y1'))} · 5Y ${pct(assetMetric(ticker,'y5'))} · 10Y ${pct(assetMetric(ticker,'y10'))}`;}
 function buildRow(ticker,name,weight){
   const row=document.createElement('div');row.className='strategy-modal__row';
   const left=document.createElement('div');left.className='strategy-modal__asset';
@@ -46,15 +43,15 @@ function buildRow(ticker,name,weight){
   text.append(top,history);left.appendChild(text);
   const value=document.createElement('span');value.className='strategy-modal__pct';value.textContent=weight+'%';row.append(left,value);return row;
 }
-function optionMarkup(key,s){const m=strategyMetrics(s);return `<button class="strategy-option" type="button" role="option" data-strategy-option="${key}" aria-selected="${selected===key}">${dotMarkup(s.color,'strategy-option__icon')}<span class="strategy-option__copy"><strong>${s.title}</strong><small>${s.subtitle}</small><span class="strategy-option__metrics">${metricPill('1Y',m.y1)}${metricPill('5Y',m.y5)}${metricPill('10Y',m.y10)}${coverageNote(m)}</span></span><svg class="strategy-option__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;}
+function optionMarkup(key,s){const m=strategyMetrics(s);return `<button class="strategy-option" type="button" role="option" data-strategy-option="${key}" aria-selected="${selected===key}">${dotMarkup(s.color,'strategy-option__icon')}<span class="strategy-option__copy"><strong>${s.title}</strong><small>${s.subtitle}</small><span class="strategy-option__metrics">${metricPill('1Y',m.y1)}${metricPill('5Y',m.y5)}${metricPill('10Y',m.y10)}</span></span><svg class="strategy-option__arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;}
 function renderMenu(){const menu=$('#strategy-select-menu');if(!menu)return;menu.innerHTML=Object.entries(STRATEGIES).map(([k,s])=>optionMarkup(k,s)).join('');}
 function updateTrigger(key){
   const label=$('#strategy-select-label'),meta=$('#strategy-select-cagr'),trigger=$('#strategy-select-trigger'),icon=trigger&&trigger.querySelector('.strategy-select__generic-icon');if(!label||!meta||!trigger)return;
-  if(!key){label.textContent=lang()==='en'?'Choose strategy':'Pilih strategy';meta.textContent='1Y · 5Y · 10Y';if(icon)icon.innerHTML=dotMarkup('#60a5fa','strategy-select__dot');return;}
+  if(!key){label.textContent=chooseLabel();meta.textContent='1Y · 5Y · 10Y';if(icon)icon.innerHTML=dotMarkup('#60a5fa','strategy-select__dot');return;}
   const s=STRATEGIES[key],m=strategyMetrics(s);label.textContent=s.title;meta.textContent=`1Y ${pct(m.y1.value)} · 5Y ${pct(m.y5.value)} · 10Y ${pct(m.y10.value)}`;if(icon)icon.innerHTML=dotMarkup(s.color,'strategy-select__dot');
 }
 function setMenu(open){const menu=$('#strategy-select-menu'),trigger=$('#strategy-select-trigger');if(!menu||!trigger)return;menuOpen=!!open;menu.hidden=!menuOpen;trigger.setAttribute('aria-expanded',String(menuOpen));$('#strategy-select')&&$('#strategy-select').classList.toggle('is-open',menuOpen);}
-function renderModalSummary(s){const host=$('#strategy-summary');if(!host)return;const m=strategyMetrics(s),minCoverage=Math.min(m.y1.coverage,m.y5.coverage,m.y10.coverage);host.innerHTML=`<div class="strategy-summary__label">Portfolio CAGR · buy-and-hold weighted growth</div><div class="strategy-summary__metrics">${metricPill('1Y',m.y1)}${metricPill('5Y',m.y5)}${metricPill('10Y',m.y10)}</div><p>${minCoverage>=99?'Semua komponen memiliki histori yang cukup untuk horizon tersebut. CAGR portfolio memakai weighted total growth lalu diannualisasi.':'Horizon yang tidak punya 100% histori ditampilkan N/A agar tidak mengubah bobot strategy secara diam-diam. Minimum coverage '+Math.round(minCoverage)+'%.'}</p>`;}
+function renderModalSummary(s){const host=$('#strategy-summary');if(!host)return;const m=strategyMetrics(s);host.innerHTML=`<div class="strategy-summary__metrics">${metricPill('1Y',m.y1)}${metricPill('5Y',m.y5)}${metricPill('10Y',m.y10)}</div>`;}
 function openStrategy(key){
   const s=STRATEGIES[key];if(!s)return;selected=key;updateTrigger(key);renderMenu();setMenu(false);$('#strategy-title').textContent=s.title;$('#strategy-subtitle').textContent=s.subtitle;
   const icon=$('#strategy-modal-icon');if(icon)icon.innerHTML=dotMarkup(s.color,'strategy-modal__dot');
