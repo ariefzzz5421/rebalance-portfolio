@@ -48,7 +48,7 @@ window.ASSETS = [
   { ticker: 'VWCE', name: 'Vanguard FTSE All-World UCITS ETF', cls: 'etf', color: '#96151d' },
   { ticker: 'IWDA', name: 'iShares Core MSCI World UCITS ETF', cls: 'etf', color: '#00a651' },
   { ticker: 'RLQ45', name: 'Premier ETF LQ-45', cls: 'etf', color: '#1b6ca8' },
-  { ticker: 'RDINDEX', name: 'Reksa Dana Indeks', cls: 'etf', color: '#1baf7a' },
+  { ticker: 'IDX', name: 'VanEck Indonesia Index ETF', cls: 'etf', color: '#00a88f' },
 
   /* ── Kripto ─────────────────────────────────────────────────────────────── */
   { ticker: 'BTC', name: 'Bitcoin', cls: 'crypto', color: '#f7931a' },
@@ -65,20 +65,20 @@ window.ASSETS = [
   { ticker: 'XAUT', name: 'Tether Gold', cls: 'gold', color: '#d4a017' },
   { ticker: 'GLD', name: 'SPDR Gold Shares', cls: 'gold', color: '#c9a227' },
 
-  /* ── Obligasi, T-bill ETF & SBN ─────────────────────────────────────────── */
+  /* ── Obligasi, T-bill ETF & sovereign debt ─────────────────────────────── */
   { ticker: 'VBIL', name: 'Vanguard 0-3 Month Treasury Bill ETF', cls: 'bond', color: '#96151d' },
   { ticker: 'SGOV', name: 'iShares 0-3 Month Treasury Bond ETF', cls: 'bond', color: '#00a651' },
   { ticker: 'TBIL', name: 'F/m US Treasury 3 Month Bill ETF', cls: 'bond', color: '#245b9e' },
   { ticker: 'BIL', name: 'State Street SPDR Bloomberg 1-3 Month T-Bill ETF', cls: 'bond', color: '#173b52' },
   { ticker: 'SHV', name: 'iShares 0-1 Year Treasury Bond ETF', cls: 'bond', color: '#00a651' },
-  { ticker: 'SBN', name: 'SBN Ritel (ORI/SR/ST/SBR)', cls: 'bond', color: '#4a3aa7' },
-  { ticker: 'FR', name: 'Obligasi Pemerintah seri FR', cls: 'bond', color: '#5b4bd6' },
-  { ticker: 'RDPT', name: 'Reksa Dana Pendapatan Tetap', cls: 'bond', color: '#6f5fe8' },
+  { ticker: 'GOVT', name: 'iShares U.S. Treasury Bond ETF', cls: 'bond', color: '#00a651' },
+  { ticker: 'IEF', name: 'iShares 7-10 Year Treasury Bond ETF', cls: 'bond', color: '#00a651' },
+  { ticker: 'BND', name: 'Vanguard Total Bond Market ETF', cls: 'bond', color: '#96151d' },
 
-  /* ── Kas & setara ───────────────────────────────────────────────────────── */
-  { ticker: 'CASH', name: 'Kas / Tabungan', cls: 'cash', color: '#0ca30c' },
-  { ticker: 'DEPO', name: 'Deposito Berjangka', cls: 'cash', color: '#0f7a3d' },
-  { ticker: 'RDPU', name: 'Reksa Dana Pasar Uang', cls: 'cash', color: '#1baf7a' },
+  /* ── Kas & setara / ultra-short fixed income ───────────────────────────── */
+  { ticker: 'USFR', name: 'WisdomTree Floating Rate Treasury Fund', cls: 'cash', color: '#4f8a3a' },
+  { ticker: 'TFLO', name: 'iShares Treasury Floating Rate Bond ETF', cls: 'cash', color: '#00a651' },
+  { ticker: 'JPST', name: 'JPMorgan Ultra-Short Income ETF', cls: 'cash', color: '#345a86' },
 ];
 
 window.assetByTicker = function (ticker) {
