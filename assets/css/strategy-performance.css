@@ -1,9 +1,9 @@
 /* Strategy performance cards: compact, stable, and history-aware. */
-.strategy-summary__metrics--performance{display:grid;grid-template-columns:repeat(3,minmax(110px,1fr));gap:10px;margin-top:0;align-items:stretch;overflow:visible}
-.strategy-performance-card{position:relative;min-width:110px;min-height:56px;padding:10px 16px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;grid-template-columns:auto minmax(0,1fr);grid-template-rows:auto auto;column-gap:10px;align-items:baseline;font-variant-numeric:tabular-nums;outline:none;cursor:help}
+.strategy-summary__metrics--performance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:0;align-items:stretch;overflow:visible}
+.strategy-performance-card{position:relative;width:100%;min-width:0;min-height:58px;padding:11px 15px;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:grid;grid-template-columns:minmax(28px,auto) minmax(76px,1fr);grid-template-rows:auto auto;column-gap:8px;align-items:baseline;font-variant-numeric:tabular-nums;outline:none;cursor:help;box-sizing:border-box}
 .strategy-performance-card__period{font-size:13px;font-weight:500;color:var(--muted);white-space:nowrap}
-.strategy-performance-card>strong{font-size:19px;font-weight:750;line-height:1.1;text-align:right;white-space:nowrap;min-width:72px;letter-spacing:-.015em}
-.strategy-performance-card>small{grid-column:1/-1;margin-top:5px;color:var(--muted);font-size:9.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.strategy-performance-card>strong{font-size:clamp(17px,2.35vw,20px);font-weight:750;line-height:1.08;text-align:right;justify-self:end;white-space:nowrap;min-width:0;max-width:100%;letter-spacing:-.02em}
+.strategy-performance-card>small{grid-column:1/-1;margin-top:6px;color:var(--muted);font-size:9.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .strategy-performance-card.pos>strong{color:var(--good)}
 .strategy-performance-card.neg>strong{color:var(--crit)}
 .strategy-performance-card.zero>strong{color:var(--muted)}
@@ -11,7 +11,35 @@
 .strategy-performance-card:focus-visible{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
 .strategy-performance-card::after{content:attr(data-tooltip);position:absolute;z-index:80;left:50%;top:calc(100% + 8px);width:min(320px,72vw);padding:9px 11px;border-radius:10px;border:1px solid var(--line-strong);background:var(--surface-2);box-shadow:var(--shadow);color:var(--ink-2);font-size:10.5px;line-height:1.45;text-align:left;white-space:normal;opacity:0;pointer-events:none;transform:translate(-50%,-4px);transition:opacity .12s ease,transform .12s ease}
 .strategy-performance-card:hover::after,.strategy-performance-card:focus::after,.strategy-performance-card.is-tooltip-open::after{opacity:1;transform:translate(-50%,0)}
-.strategy-performance-method{margin-top:9px;color:var(--muted);font-size:9.5px;line-height:1.45}
+.strategy-performance-method{margin-top:10px;color:var(--muted);font-size:9.5px;line-height:1.45}
 .strategy-performance-empty{min-height:56px;display:flex;align-items:center;color:var(--muted);font-size:11px}
-@media(max-width:560px){.strategy-summary__metrics--performance{grid-template-columns:1fr}.strategy-performance-card{width:100%;min-height:54px}.strategy-performance-card::after{left:0;transform:translate(0,-4px);width:min(300px,78vw)}.strategy-performance-card:hover::after,.strategy-performance-card:focus::after,.strategy-performance-card.is-tooltip-open::after{transform:translate(0,0)}}
+
+/* Keep the allocation percentages in one clean, fixed right-hand column. */
+#strategy-modal .sheet__panel{overflow-x:hidden}
+.strategy-modal__list{width:100%;min-width:0}
+.strategy-modal__row{width:100%;min-width:0;box-sizing:border-box;display:grid;grid-template-columns:minmax(0,1fr) 82px;align-items:center;gap:16px;padding-left:15px;padding-right:15px}
+.strategy-modal__asset{min-width:0;overflow:hidden}
+.strategy-modal__identity{min-width:0;max-width:100%}
+.strategy-modal__identity-line{min-width:0}
+.strategy-modal__identity-line span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strategy-modal__asset-cagr{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.strategy-modal__pct{width:82px;min-width:82px;justify-self:end;text-align:right;font-size:18px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.02em;white-space:nowrap}
+
+@media(max-width:700px){
+  .strategy-summary__metrics--performance{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .strategy-performance-card{min-height:56px;padding:10px 11px;grid-template-columns:minmax(24px,auto) minmax(64px,1fr);column-gap:6px}
+  .strategy-performance-card__period{font-size:12px}
+  .strategy-performance-card>strong{font-size:17px}
+  .strategy-modal__row{grid-template-columns:minmax(0,1fr) 68px;gap:10px;padding-left:12px;padding-right:12px}
+  .strategy-modal__pct{width:68px;min-width:68px;font-size:17px}
+}
+@media(max-width:560px){
+  .strategy-summary__metrics--performance{grid-template-columns:1fr}
+  .strategy-performance-card{width:100%;min-height:54px;padding-inline:14px;grid-template-columns:auto minmax(80px,1fr)}
+  .strategy-performance-card>strong{font-size:19px}
+  .strategy-performance-card::after{left:0;transform:translate(0,-4px);width:min(300px,78vw)}
+  .strategy-performance-card:hover::after,.strategy-performance-card:focus::after,.strategy-performance-card.is-tooltip-open::after{transform:translate(0,0)}
+  .strategy-modal__row{grid-template-columns:minmax(0,1fr) 62px;gap:8px;padding-left:10px;padding-right:10px}
+  .strategy-modal__pct{width:62px;min-width:62px;font-size:16px}
+}
 @media(prefers-reduced-motion:reduce){.strategy-performance-card::after{transition:none}}
