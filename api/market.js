@@ -39,7 +39,9 @@ function parseResult(symbol,result,includeCagr){
   const meta=result.meta||{},live=Number(meta.regularMarketPrice),last=chartPoints[chartPoints.length-1]||returnPoints[returnPoints.length-1],endTime=(Number(meta.regularMarketTime)||Math.floor((last&&last.t||0)/1000))*1000,livePrice=Number.isFinite(live)&&live>0?live:(last&&last.v),previousClose=Number(meta.chartPreviousClose||meta.previousClose);
   if(!Number.isFinite(livePrice)||!endTime)throw new Error('No usable prices');
   if(!chartPoints.length||Math.abs(chartPoints[chartPoints.length-1].t-endTime)>3600000)chartPoints.push({t:endTime,v:Number(livePrice.toFixed(6))});
-  const adjustedEnd=returnPoints.length?{t:endTime,v:returnPoints[returnPoints.length-1].v}:null;
+  // CAGR must end on the actual adjusted-close observation timestamp. Using a live
+  // quote timestamp with a monthly adjusted close would artificially lengthen the period.
+  const adjustedEnd=returnPoints.length?returnPoints[returnPoints.length-1]:null;
   const periods={m1:null,y1:null,y5:null,y10:null};
   if(includeCagr&&adjustedEnd){for(const [key,months] of Object.entries(PERIODS))periods[key]=periodMetric(returnPoints,adjustedEnd,months);}
   const cagr={m1:periods.m1&&periods.m1.cagr,y1:periods.y1&&periods.y1.cagr,y5:periods.y5&&periods.y5.cagr,y10:periods.y10&&periods.y10.cagr};
