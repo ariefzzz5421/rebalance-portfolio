@@ -1,12 +1,14 @@
 (function(){
 'use strict';
 const STORE='porsi.v1';
+const STRATEGY_CACHE_KEY='porsi.strategy.performance.v4';
+const STRATEGY_CACHE_TTL=15*60*1000;
 const STRATEGIES={
   high:{title:'Strategy 1 · High Risk',short:'High Risk',subtitle:'Crypto-heavy growth allocation',color:'#ff6b6b',parts:[['BTC','Bitcoin',50],['HYPE','Hyperliquid',20],['XAUT','Tether Gold',15],['USDT','Tether USD',15]]},
   conservative:{title:'Strategy 2 · Conservative',short:'Conservative',subtitle:'Balanced S&P 500, Bitcoin, and gold',color:'#22c55e',parts:[['SPX','S&P 500',34],['BTC','Bitcoin',33],['GOLD','Emas Fisik / Logam Mulia',33]]},
   pension:{title:'Strategy 3 · Pension Fund',short:'Pension Fund',subtitle:'Global equities with short-duration U.S. Treasury reserves',color:'#60a5fa',parts:[['VT','Vanguard Total World Stock ETF',60],['SHV','iShares 0-1 Year Treasury Bond ETF',20],['SGOV','iShares 0-3 Month Treasury Bond ETF',20]]}
 };
-let selected=null,market={},strategyMarket={},strategyPerformance={},menuOpen=false;
+let selected=null,market={},strategyMarket={},strategyPerformance={},menuOpen=false,metricsReady=false,metricsPromise=null;
 const $=(s,r)=>(r||document).querySelector(s);
 const pctAsset=v=>v==null||!Number.isFinite(v)?'N/A':`${v>0?'+':''}${v.toFixed(1)}%`;
 const pctReturn=v=>v==null||!Number.isFinite(v)?'N/A':`${v>0?'+':''}${(v*100).toFixed(1)}%`;
@@ -32,11 +34,37 @@ function updateTrigger(key){const label=$('#strategy-select-label'),meta=$('#str
 function setMenu(open){const menu=$('#strategy-select-menu'),trigger=$('#strategy-select-trigger');if(!menu||!trigger)return;menuOpen=!!open;menu.hidden=!menuOpen;trigger.setAttribute('aria-expanded',String(menuOpen));$('#strategy-select')&&$('#strategy-select').classList.toggle('is-open',menuOpen);}
 function metricTooltip(metric){let text=metric.tooltip||'';text+=`${text?' · ':''}$10,000 normalized NAV · buy and hold · no rebalancing`;if(metric.stablecoinFallbackUsed)text+=' · explicit $1 stablecoin fallback used because market pricing was unavailable';return text;}
 function performanceCard(metric){const type=metric.returnType==='cagr'?(metric.periodKey==='MAX'&&metric.actualYears?`${metric.actualYears.toFixed(1)}Y CAGR`:'CAGR'):'Total return',tip=metricTooltip(metric),value=pctReturn(metric.value);return `<span class="strategy-performance-card ${tone(metric.value)}" tabindex="0" data-tooltip="${esc(tip)}" title="${esc(tip)}"><span class="strategy-performance-card__period">${esc(metric.label)}</span><strong>${esc(value)}</strong><small>${esc(type)}</small></span>`;}
-function renderModalSummary(key){const host=$('#strategy-summary');if(!host)return;const result=strategyPerformance[key],metrics=result&&result.metrics||[];if(!metrics.length){host.innerHTML='<div class="strategy-performance-empty">Historical strategy performance is unavailable.</div>';return;}host.innerHTML=`<div class="strategy-summary__metrics strategy-summary__metrics--performance">${metrics.map(performanceCard).join('')}</div><div class="strategy-performance-method">$10,000 normalized · buy & hold from period start · rebalance: none</div>`;}
-function openStrategy(key){const s=STRATEGIES[key];if(!s)return;selected=key;updateTrigger(key);renderMenu();setMenu(false);$('#strategy-title').textContent=s.title;$('#strategy-subtitle').textContent=s.subtitle;const icon=$('#strategy-modal-icon');if(icon)icon.innerHTML=dotMarkup(s.color,'strategy-modal__dot');renderModalSummary(key);const host=$('#strategy-list');host.textContent='';s.parts.forEach(([ticker,name,weight])=>host.appendChild(buildRow(ticker,name,weight)));const sheet=$('#strategy-modal');sheet.hidden=false;document.body.classList.add('locked');requestAnimationFrame(()=>sheet.classList.add('on'));}
+function renderModalSummary(key){const host=$('#strategy-summary');if(!host)return;const result=strategyPerformance[key],metrics=result&&result.metrics||[];if(!metrics.length){host.innerHTML='<div class="strategy-performance-empty">Historical strategy performance is unavailable.</div>';return;}host.innerHTML=`<div class="strategy-summary__metrics strategy-summary__metrics--performance">${metrics.map(performanceCard).join('')}</div>`;}
+function openStrategy(key){const s=STRATEGIES[key];if(!s)return;selected=key;updateTrigger(key);renderMenu();setMenu(false);$('#strategy-title').textContent=s.title;$('#strategy-subtitle').textContent=s.subtitle;const icon=$('#strategy-modal-icon');if(icon)icon.innerHTML=dotMarkup(s.color,'strategy-modal__dot');renderModalSummary(key);const host=$('#strategy-list');host.textContent='';s.parts.forEach(([ticker,name,weight])=>host.appendChild(buildRow(ticker,name,weight)));const sheet=$('#strategy-modal');sheet.hidden=false;document.body.classList.add('locked');requestAnimationFrame(()=>sheet.classList.add('on'));if(!metricsReady)loadStrategyMetrics();}
 function closeStrategy(){const sheet=$('#strategy-modal');if(!sheet)return;sheet.classList.remove('on');document.body.classList.remove('locked');setTimeout(()=>sheet.hidden=true,180);}
 function applyStrategy(){const s=STRATEGIES[selected];if(!s)return;let prev={};try{prev=JSON.parse(localStorage.getItem(STORE)||'{}')||{};}catch{}const next={currency:prev.currency||'IDR',total:Number(prev.total)||0,theme:prev.theme==='light'?'light':'dark',parts:s.parts.map(([ticker,,weight],i)=>({id:uid(),ticker,name:ticker,pct:weight,slot:i+1}))};try{localStorage.setItem(STORE,JSON.stringify(next));}catch{}location.reload();}
-async function loadStrategyMetrics(){const symbols=[...new Set(Object.values(STRATEGIES).flatMap(s=>s.parts.map(([ticker])=>window.MARKET_SYMBOLS&&window.MARKET_SYMBOLS[ticker]).filter(Boolean)))];if(!symbols.length){renderMenu();return;}const urlSymbols=encodeURIComponent(symbols.join(',')),[summaryResult,strategyResult]=await Promise.allSettled([fetch(`/api/market?symbols=${urlSymbols}`),fetch(`/api/market?mode=strategy&symbols=${urlSymbols}`)]);try{if(summaryResult.status==='fulfilled'&&summaryResult.value.ok){const j=await summaryResult.value.json();market=j.data||{};}}catch(err){console.warn('Asset CAGR summary unavailable',err);}try{if(strategyResult.status==='fulfilled'&&strategyResult.value.ok){const j=await strategyResult.value.json();strategyMarket=j.data||{};}else throw new Error('Strategy history endpoint unavailable');}catch(err){console.warn('Strategy history unavailable',err);strategyMarket={};}recalculateStrategies();renderMenu();updateTrigger(selected);if(selected)renderModalSummary(selected);}
-function boot(){const trigger=$('#strategy-select-trigger'),menu=$('#strategy-select-menu');updateTrigger(null);if(trigger)trigger.addEventListener('click',e=>{e.stopPropagation();setMenu(!menuOpen);});if(menu)menu.addEventListener('click',e=>{const b=e.target.closest('[data-strategy-option]');if(b)openStrategy(b.dataset.strategyOption);});document.addEventListener('click',e=>{if(menuOpen&&!e.target.closest('#strategy-select'))setMenu(false);});document.querySelectorAll('#strategy-modal [data-close-strategy]').forEach(btn=>btn.addEventListener('click',closeStrategy));const apply=$('#apply-strategy');if(apply)apply.addEventListener('click',applyStrategy);const ccy=$('#ccy-chip');if(ccy)ccy.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();location.href='settings.html';},true);document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(menuOpen)setMenu(false);else if($('#strategy-modal')&&!$('#strategy-modal').hidden)closeStrategy();}});renderMenu();loadStrategyMetrics();}
+function compactMarketForCache(data){const out={};Object.entries(data||{}).forEach(([symbol,value])=>{if(!value||value.error)return;out[symbol]={cagr:value.cagr||{}};});return out;}
+function restoreMetricsCache(){if(metricsReady)return true;try{const cached=JSON.parse(sessionStorage.getItem(STRATEGY_CACHE_KEY)||'null');if(!cached||!cached.ts||Date.now()-cached.ts>STRATEGY_CACHE_TTL)return false;market=cached.market||{};strategyPerformance=cached.strategyPerformance||{};metricsReady=Object.keys(strategyPerformance).length>0;return metricsReady;}catch{return false;}}
+function saveMetricsCache(){try{sessionStorage.setItem(STRATEGY_CACHE_KEY,JSON.stringify({ts:Date.now(),market:compactMarketForCache(market),strategyPerformance}));}catch{}}
+function publishMetricState(){renderMenu();updateTrigger(selected);if(selected)renderModalSummary(selected);}
+async function loadStrategyMetrics(){
+  if(metricsReady){publishMetricState();return true;}
+  if(restoreMetricsCache()){publishMetricState();return true;}
+  if(metricsPromise)return metricsPromise;
+  const symbols=[...new Set(Object.values(STRATEGIES).flatMap(s=>s.parts.map(([ticker])=>window.MARKET_SYMBOLS&&window.MARKET_SYMBOLS[ticker]).filter(Boolean)))];
+  if(!symbols.length){renderMenu();return false;}
+  const urlSymbols=encodeURIComponent(symbols.join(','));
+  metricsPromise=(async()=>{
+    const [summaryResult,strategyResult]=await Promise.allSettled([
+      fetch(`/api/market?symbols=${urlSymbols}`),
+      fetch(`/api/market?mode=strategy&symbols=${urlSymbols}`)
+    ]);
+    try{if(summaryResult.status==='fulfilled'&&summaryResult.value.ok){const j=await summaryResult.value.json();market=j.data||{};}}catch(err){console.warn('Asset CAGR summary unavailable',err);}
+    try{if(strategyResult.status==='fulfilled'&&strategyResult.value.ok){const j=await strategyResult.value.json();strategyMarket=j.data||{};}else throw new Error('Strategy history endpoint unavailable');}catch(err){console.warn('Strategy history unavailable',err);strategyMarket={};}
+    recalculateStrategies();
+    metricsReady=Object.values(strategyPerformance).some(r=>r&&Array.isArray(r.metrics)&&r.metrics.length);
+    if(metricsReady)saveMetricsCache();
+    publishMetricState();
+    return metricsReady;
+  })().finally(()=>{metricsPromise=null;});
+  return metricsPromise;
+}
+function scheduleMetricWarmup(){const work=()=>loadStrategyMetrics();if('requestIdleCallback'in window)window.requestIdleCallback(work,{timeout:1600});else setTimeout(work,650);}
+function boot(){const trigger=$('#strategy-select-trigger'),menu=$('#strategy-select-menu');updateTrigger(null);const restored=restoreMetricsCache();if(trigger)trigger.addEventListener('click',e=>{e.stopPropagation();setMenu(!menuOpen);if(!metricsReady)loadStrategyMetrics();});if(menu)menu.addEventListener('click',e=>{const b=e.target.closest('[data-strategy-option]');if(b)openStrategy(b.dataset.strategyOption);});document.addEventListener('click',e=>{if(menuOpen&&!e.target.closest('#strategy-select'))setMenu(false);});document.querySelectorAll('#strategy-modal [data-close-strategy]').forEach(btn=>btn.addEventListener('click',closeStrategy));const apply=$('#apply-strategy');if(apply)apply.addEventListener('click',applyStrategy);const ccy=$('#ccy-chip');if(ccy)ccy.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();location.href='settings.html';},true);document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(menuOpen)setMenu(false);else if($('#strategy-modal')&&!$('#strategy-modal').hidden)closeStrategy();}});renderMenu();if(restored)publishMetricState();else scheduleMetricWarmup();}
 document.addEventListener('DOMContentLoaded',boot,{once:true});
 })();
