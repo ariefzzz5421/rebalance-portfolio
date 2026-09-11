@@ -3,14 +3,16 @@
   const SYMBOLS={
     BBCA:'BBCA.JK',BBRI:'BBRI.JK',BMRI:'BMRI.JK',TLKM:'TLKM.JK',ASII:'ASII.JK',UNVR:'UNVR.JK',ICBP:'ICBP.JK',KLBF:'KLBF.JK',ANTM:'ANTM.JK',GOTO:'GOTO.JK',
     AAPL:'AAPL',MSFT:'MSFT',NVDA:'NVDA',GOOGL:'GOOGL',AMZN:'AMZN',META:'META',TSLA:'TSLA',AVGO:'AVGO',JPM:'JPM',V:'V',
-    SPX:'^GSPC',VOO:'VOO',QQQ:'QQQ',VTI:'VTI',VWRA:'VWRA.L',RLQ45:'RLQ45.JK',
+    SPX:'^GSPC',VOO:'VOO',QQQ:'QQQ',VTI:'VTI',VT:'VT',VWRA:'VWRA.L',VWCE:'VWCE.DE',IWDA:'IWDA.L',RLQ45:'RLQ45.JK',
+    VBIL:'VBIL',SGOV:'SGOV',TBIL:'TBIL',BIL:'BIL',SHV:'SHV',
     BTC:'BTC-USD',ETH:'ETH-USD',SOL:'SOL-USD',BNB:'BNB-USD',XRP:'XRP-USD',DOGE:'DOGE-USD',HYPE:'HYPE32196-USD',USDT:'USDT-USD',
     GOLD:'GC=F',XAUT:'XAUT-USD',GLD:'GLD'
   };
   const GOOGLE={
     BBCA:'BBCA:IDX',BBRI:'BBRI:IDX',BMRI:'BMRI:IDX',TLKM:'TLKM:IDX',ASII:'ASII:IDX',UNVR:'UNVR:IDX',ICBP:'ICBP:IDX',KLBF:'KLBF:IDX',ANTM:'ANTM:IDX',GOTO:'GOTO:IDX',
     AAPL:'AAPL:NASDAQ',MSFT:'MSFT:NASDAQ',NVDA:'NVDA:NASDAQ',GOOGL:'GOOGL:NASDAQ',AMZN:'AMZN:NASDAQ',META:'META:NASDAQ',TSLA:'TSLA:NASDAQ',AVGO:'AVGO:NASDAQ',JPM:'JPM:NYSE',V:'V:NYSE',
-    SPX:'.INX:INDEXSP',VOO:'VOO:NYSEARCA',QQQ:'QQQ:NASDAQ',VTI:'VTI:NYSEARCA',VWRA:'VWRA:LON',
+    SPX:'.INX:INDEXSP',VOO:'VOO:NYSEARCA',QQQ:'QQQ:NASDAQ',VTI:'VTI:NYSEARCA',VT:'VT:NYSEARCA',VWRA:'VWRA:LON',VWCE:'VWCE:ETR',IWDA:'IWDA:LON',
+    VBIL:'VBIL:NASDAQ',SGOV:'SGOV:NYSE',TBIL:'TBIL:NASDAQ',BIL:'BIL:NYSEARCA',SHV:'SHV:NYSE',
     BTC:'BTC-USD',ETH:'ETH-USD',SOL:'SOL-USD',BNB:'BNB-USD',XRP:'XRP-USD',DOGE:'DOGE-USD',USDT:'USDT-USD',GLD:'GLD:NYSEARCA'
   };
   const SPECIAL={
@@ -21,7 +23,15 @@
     SPX:{summary:'S&P 500 adalah indeks saham perusahaan besar Amerika Serikat dan benchmark utama untuk pasar ekuitas AS. Bobotnya berbasis kapitalisasi pasar sehingga perusahaan terbesar memiliki pengaruh paling besar.',background:'Indeks ini menjadi salah satu cara paling umum untuk mengukur kinerja korporasi besar AS. Return jangka panjang datang dari pertumbuhan laba, dividen, perubahan valuasi, dan komposisi perusahaan yang terus diperbarui.'},
     GOLD:{summary:'Emas adalah komoditas langka sekaligus aset moneter yang digunakan sebagai penyimpan nilai. Harga modernnya dipengaruhi real yield, dolar AS, permintaan bank sentral, inflasi, dan risk sentiment.',background:'Emas telah digunakan sebagai simbol kekayaan dan cadangan moneter selama ribuan tahun. Dalam portofolio modern, perannya sering sebagai diversifier ketika kepercayaan terhadap aset finansial atau mata uang melemah.'},
     BBCA:{summary:'BBCA adalah saham Bank Central Asia, salah satu bank swasta terbesar di Indonesia. Kekuatan utamanya berasal dari franchise transaksi, dana murah, kualitas aset, dan disiplin kredit.',background:'BCA berkembang menjadi salah satu bisnis berkualitas paling konsisten di BEI. Investor biasanya memantau pertumbuhan kredit, CASA, NIM, cost of credit, kualitas aset, serta valuasi premium yang melekat pada kualitas franchise.'},
-    NVDA:{summary:'NVIDIA adalah perusahaan semikonduktor dan accelerated computing yang menjadi pemain utama GPU, data center, dan infrastruktur AI.',background:'Berawal dari grafis gaming, CUDA mengubah GPU NVIDIA menjadi platform komputasi umum. Gelombang AI memperkuat moat dari kombinasi hardware, software, networking, dan developer ecosystem.'}
+    NVDA:{summary:'NVIDIA adalah perusahaan semikonduktor dan accelerated computing yang menjadi pemain utama GPU, data center, dan infrastruktur AI.',background:'Berawal dari grafis gaming, CUDA mengubah GPU NVIDIA menjadi platform komputasi umum. Gelombang AI memperkuat moat dari kombinasi hardware, software, networking, dan developer ecosystem.'},
+    VT:{summary:'VT adalah Vanguard Total World Stock ETF, ETF ekuitas global yang melacak FTSE Global All Cap Index dan memberi eksposur luas ke saham developed serta emerging markets.',background:'VT cocok sebagai core global equity holding karena satu ETF mencakup ribuan perusahaan lintas negara dan kapitalisasi pasar. Return utamanya datang dari pertumbuhan laba global, dividen, valuasi, dan perubahan bobot pasar.'},
+    VWCE:{summary:'VWCE adalah Vanguard FTSE All-World UCITS ETF kelas accumulating yang memberi eksposur global ke saham large dan mid-cap developed serta emerging markets.',background:'VWCE mengakumulasi distribusi kembali ke dalam fund. Untuk investor Eropa, listing Xetra dalam EUR memberi akses ke portofolio global, sementara risiko ekonominya tetap berasal dari perusahaan dan mata uang underlying.'},
+    IWDA:{summary:'IWDA adalah iShares Core MSCI World UCITS ETF kelas accumulating yang melacak saham large dan mid-cap di negara maju.',background:'IWDA sering dipakai sebagai core developed-markets allocation. Karena MSCI World tidak mencakup emerging markets, investor yang ingin cakupan global penuh biasanya menambah emerging-market exposure secara terpisah.'},
+    VBIL:{summary:'VBIL adalah Vanguard 0-3 Month Treasury Bill ETF yang berfokus pada U.S. Treasury bills dengan jatuh tempo sangat pendek.',background:'Durasi yang sangat rendah membuat VBIL relatif tidak sensitif terhadap perubahan suku bunga dibanding obligasi jangka panjang. Total return utamanya berasal dari income Treasury dan perubahan kecil pada harga.'},
+    SGOV:{summary:'SGOV adalah iShares 0-3 Month Treasury Bond ETF yang memberi eksposur ke U.S. Treasury securities dengan sisa jatuh tempo sampai sekitar tiga bulan.',background:'SGOV sering dipakai sebagai cash-management vehicle karena credit risk Treasury sangat rendah dan duration risk minimal. Karena membayar distribusi, adjusted-close lebih tepat untuk mengukur total return daripada price-only chart.'},
+    TBIL:{summary:'TBIL adalah F/m US Treasury 3 Month Bill ETF yang menargetkan exposure ke on-the-run U.S. 3-month Treasury bill.',background:'TBIL mempertahankan maturity target dengan melakukan roll ke Treasury bill baru. Return terutama berasal dari yield T-bill; distribusi membuat total-return history lebih informatif daripada perubahan harga nominal semata.'},
+    BIL:{summary:'BIL adalah State Street SPDR Bloomberg 1-3 Month T-Bill ETF yang melacak Treasury bills dengan sisa jatuh tempo sekitar satu sampai tiga bulan.',background:'BIL adalah salah satu ETF T-bill paling lama beroperasi. Durasi sangat pendek membatasi interest-rate sensitivity, sementara total return terutama berasal dari income yang dibagikan secara berkala.'},
+    SHV:{summary:'SHV adalah iShares 0-1 Year Treasury Bond ETF yang memegang U.S. Treasury dengan sisa jatuh tempo satu tahun atau kurang.',background:'SHV sedikit lebih panjang durasinya dibanding SGOV, sehingga masih berfungsi sebagai low-volatility Treasury allocation namun dengan sedikit lebih banyak sensitivity terhadap perubahan short-term yields.'}
   };
   const CLASS_COPY={
     idx:['saham Indonesia yang memberi kepemilikan pada perusahaan publik di Bursa Efek Indonesia.','Nilainya terutama digerakkan pertumbuhan laba, kualitas neraca, valuasi, kebijakan domestik, dan siklus ekonomi Indonesia.'],
