@@ -1,12 +1,6 @@
 /**
  * The asset catalogue: what a slice can point at.
- *
- * Static reference data only — ticker, name, class and a brand colour. There
- * are no prices here and no market feed anywhere in the app; a slice is a
- * percentage of the money you typed, nothing more.
- *
- * `color` is the fallback used to tint a monogram tile when the asset has no
- * brand mark in `marks.js`.
+ * Static metadata only; live/history data comes from /api/market.
  */
 
 window.ASSET_CLASSES = [
@@ -49,7 +43,10 @@ window.ASSETS = [
   { ticker: 'VOO', name: 'Vanguard S&P 500 ETF', cls: 'etf', color: '#96151d' },
   { ticker: 'QQQ', name: 'Invesco QQQ (Nasdaq-100)', cls: 'etf', color: '#003d5b' },
   { ticker: 'VTI', name: 'Vanguard Total Stock Market', cls: 'etf', color: '#96151d' },
+  { ticker: 'VT', name: 'Vanguard Total World Stock ETF', cls: 'etf', color: '#96151d' },
   { ticker: 'VWRA', name: 'Vanguard FTSE All-World', cls: 'etf', color: '#96151d' },
+  { ticker: 'VWCE', name: 'Vanguard FTSE All-World UCITS ETF', cls: 'etf', color: '#96151d' },
+  { ticker: 'IWDA', name: 'iShares Core MSCI World UCITS ETF', cls: 'etf', color: '#00a651' },
   { ticker: 'RLQ45', name: 'Premier ETF LQ-45', cls: 'etf', color: '#1b6ca8' },
   { ticker: 'RDINDEX', name: 'Reksa Dana Indeks', cls: 'etf', color: '#1baf7a' },
 
@@ -68,7 +65,12 @@ window.ASSETS = [
   { ticker: 'XAUT', name: 'Tether Gold', cls: 'gold', color: '#d4a017' },
   { ticker: 'GLD', name: 'SPDR Gold Shares', cls: 'gold', color: '#c9a227' },
 
-  /* ── Obligasi & SBN ─────────────────────────────────────────────────────── */
+  /* ── Obligasi, T-bill ETF & SBN ─────────────────────────────────────────── */
+  { ticker: 'VBIL', name: 'Vanguard 0-3 Month Treasury Bill ETF', cls: 'bond', color: '#96151d' },
+  { ticker: 'SGOV', name: 'iShares 0-3 Month Treasury Bond ETF', cls: 'bond', color: '#00a651' },
+  { ticker: 'TBIL', name: 'F/m US Treasury 3 Month Bill ETF', cls: 'bond', color: '#245b9e' },
+  { ticker: 'BIL', name: 'State Street SPDR Bloomberg 1-3 Month T-Bill ETF', cls: 'bond', color: '#173b52' },
+  { ticker: 'SHV', name: 'iShares 0-1 Year Treasury Bond ETF', cls: 'bond', color: '#00a651' },
   { ticker: 'SBN', name: 'SBN Ritel (ORI/SR/ST/SBR)', cls: 'bond', color: '#4a3aa7' },
   { ticker: 'FR', name: 'Obligasi Pemerintah seri FR', cls: 'bond', color: '#5b4bd6' },
   { ticker: 'RDPT', name: 'Reksa Dana Pendapatan Tetap', cls: 'bond', color: '#6f5fe8' },
@@ -87,12 +89,6 @@ window.classById = function (id) {
   return window.ASSET_CLASSES.find((c) => c.id === id) || null;
 };
 
-/**
- * Fallback glyph per class, used when an asset has no brand mark of its own.
- * Only a handful of issuers publish an openly licensed logo, so most rows lean
- * on these — a slice then still says "this is a share / a fund / gold" rather
- * than showing two letters.
- */
 window.CLASS_MARKS = {
   idx: 'CLS_STOCK',
   us: 'CLS_STOCK',

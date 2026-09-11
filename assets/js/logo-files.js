@@ -20,4 +20,12 @@ window.LOGO_FILES = {
   QQQ: 'assets/logos/QQQ.svg',
   VOO: 'assets/logos/VOO.svg',
   VTI: 'assets/logos/VTI.svg',
+  VT: 'assets/logos/VTI.svg',
+  VWCE: 'assets/logos/VTI.svg',
+  VBIL: 'assets/logos/VTI.svg',
+  IWDA: 'assets/logos/ISHARES.svg',
+  SGOV: 'assets/logos/ISHARES.svg',
+  SHV: 'assets/logos/ISHARES.svg',
+  BIL: 'assets/logos/SPDR.svg',
+  TBIL: 'assets/logos/TBIL.svg',
 };
