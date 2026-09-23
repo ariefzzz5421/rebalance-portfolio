@@ -176,8 +176,13 @@ window.Exporter = (function () {
       row.logoImage = row.logoSrc ? await loadLogo(row.logoSrc) : null;
     }));
 
+    const profile = data.profile || {};
+    const profileName = typeof profile.name === 'string' ? profile.name.trim().slice(0, 40) : '';
+    const avatarImage = profile.avatarSrc ? await loadLogo(profile.avatarSrc) : null;
+    const hasProfile = !!(profileName || avatarImage);
+
     const pieBox = 460;
-    const headH = 300;
+    const headH = hasProfile ? 372 : 300;
     const listH = rows.length * ROW_H;
     const H = headH + pieBox + 56 + listH + 128;
 
@@ -205,13 +210,38 @@ window.Exporter = (function () {
     ctx.fillText(data.generatedAt, W - PAD, PAD + 32);
     ctx.textAlign = 'left';
 
+    if (hasProfile) {
+      const x = PAD, y = 134, size = 54;
+      ctx.save();
+      roundRect(ctx, x, y, size, size, 15);
+      ctx.clip();
+      ctx.fillStyle = mix(t.surface, t.ink, 0.16);
+      ctx.fillRect(x, y, size, size);
+      if (avatarImage) {
+        const side = Math.min(avatarImage.naturalWidth, avatarImage.naturalHeight);
+        ctx.drawImage(avatarImage, (avatarImage.naturalWidth - side) / 2, (avatarImage.naturalHeight - side) / 2, side, side, x, y, size, size);
+      } else {
+        ctx.fillStyle = t.ink;
+        ctx.font = font(750, 26);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(profileName.charAt(0).toUpperCase(), x + size / 2, y + size / 2);
+      }
+      ctx.restore();
+      if (profileName) {
+        ctx.fillStyle = t.ink;
+        ctx.font = font(700, 27);
+        ctx.fillText(profileName, x + 72, y + 34, W - PAD * 2 - 72);
+      }
+    }
+
     /* Total */
     ctx.fillStyle = t.muted;
     ctx.font = font(650, 20);
-    ctx.fillText(data.totalLabel.toUpperCase(), PAD, PAD + 108);
+    ctx.fillText(data.totalLabel.toUpperCase(), PAD, PAD + 108 + (hasProfile ? 52 : 0));
     ctx.fillStyle = t.ink;
     ctx.font = font(800, 76);
-    ctx.fillText(data.totalText, PAD, PAD + 182);
+    ctx.fillText(data.totalText, PAD, PAD + 182 + (hasProfile ? 52 : 0));
 
     /* Divider */
     ctx.strokeStyle = t.line;

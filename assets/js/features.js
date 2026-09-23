@@ -4,9 +4,9 @@ const STORE='porsi.v1';
 const STRATEGY_CACHE_KEY='porsi.strategy.performance.v4';
 const STRATEGY_CACHE_TTL=15*60*1000;
 const STRATEGIES={
-  high:{title:'Strategy 1 · High Risk',short:'High Risk',subtitle:'Crypto-heavy growth allocation',color:'#ff6b6b',icon:'strategy-high.svg',parts:[['BTC','Bitcoin',50],['HYPE','Hyperliquid',20],['XAUT','Tether Gold',15],['USDT','Tether USD',15]]},
-  conservative:{title:'Strategy 2 · Conservative',short:'Conservative',subtitle:'Balanced S&P 500, Bitcoin, and gold',color:'#22c55e',icon:'strategy-conservative.svg',parts:[['SPX','S&P 500',34],['BTC','Bitcoin',33],['GOLD','Emas Fisik / Logam Mulia',33]]},
-  pension:{title:'Strategy 3 · Pension Fund',short:'Pension Fund',subtitle:'Global equities with short-duration U.S. Treasury reserves',color:'#60a5fa',icon:'strategy-pension.svg',parts:[['VT','Vanguard Total World Stock ETF',60],['SHV','iShares 0-1 Year Treasury Bond ETF',20],['SGOV','iShares 0-3 Month Treasury Bond ETF',20]]}
+  high:{title:'Strategy 1 · High Risk',short:'High Risk',subtitle:'Crypto-heavy growth allocation',color:'#ff6b6b',icon:'rocket',parts:[['BTC','Bitcoin',50],['HYPE','Hyperliquid',20],['XAUT','Tether Gold',15],['USDT','Tether USD',15]]},
+  conservative:{title:'Strategy 2 · Conservative',short:'Conservative',subtitle:'Balanced S&P 500, Bitcoin, and gold',color:'#22c55e',icon:'shield-check',parts:[['SPX','S&P 500',34],['BTC','Bitcoin',33],['GOLD','Emas Fisik / Logam Mulia',33]]},
+  pension:{title:'Strategy 3 · Pension Fund',short:'Pension Fund',subtitle:'Global equities with short-duration U.S. Treasury reserves',color:'#60a5fa',icon:'landmark',parts:[['VT','Vanguard Total World Stock ETF',60],['SHV','iShares 0-1 Year Treasury Bond ETF',20],['SGOV','iShares 0-3 Month Treasury Bond ETF',20]]}
 };
 let selected=null,market={},strategyMarket={},strategyPerformance={},menuOpen=false,metricsReady=false,metricsPromise=null;
 const $=(s,r)=>(r||document).querySelector(s);
@@ -20,7 +20,7 @@ function chooseLabel(){return({id:'Pilih strategi',en:'Choose strategy',ja:'戦�
 function assetMarket(ticker){const symbol=window.MARKET_SYMBOLS&&window.MARKET_SYMBOLS[ticker];return symbol&&market[symbol]&&!market[symbol].error?market[symbol]:null;}
 function assetMetric(ticker,key){const m=assetMarket(ticker),v=m&&m.cagr&&m.cagr[key];return Number.isFinite(v)?v:null;}
 function dotMarkup(color,extraClass){return `<span class="strategy-color-dot${extraClass?' '+extraClass:''}" style="--strategy-color:${color}" aria-hidden="true"></span>`;}
-function strategyIcon(s){return `<img class="strategy-icon" src="assets/icons/${s.icon}" alt="" aria-hidden="true" width="44" height="44">`;}
+function strategyIcon(s){return `<span class="strategy-icon" style="--strategy-color:${s.color}" aria-hidden="true"><span class="strategy-icon__glyph strategy-icon__glyph--${s.icon}"></span></span>`;}
 function assetPreview(s){return `<span class="strategy-assets" aria-label="Aset: ${s.parts.map(([ticker])=>esc(ticker)).join(', ')}">${s.parts.map(([ticker])=>`<span class="strategy-assets__item">${window.assetIconEl?window.assetIconEl(ticker,'sm').outerHTML:''}<span>${esc(ticker)}</span></span>`).join('')}</span>`;}
 function assetHistoryText(ticker){return `1M ${pctAsset(assetMetric(ticker,'m1'))} · 1Y ${pctAsset(assetMetric(ticker,'y1'))} · 5Y ${pctAsset(assetMetric(ticker,'y5'))} · 10Y ${pctAsset(assetMetric(ticker,'y10'))}`;}
 function buildRow(ticker,name,weight){const row=document.createElement('div');row.className='strategy-modal__row';const left=document.createElement('div');left.className='strategy-modal__asset';if(window.assetIconEl)left.appendChild(window.assetIconEl(ticker,'md'));const text=document.createElement('div');text.className='strategy-modal__identity';const top=document.createElement('div');top.className='strategy-modal__identity-line';const tk=document.createElement('strong');tk.textContent=ticker;const nm=document.createElement('span');nm.textContent=name;top.append(tk,nm);const history=document.createElement('small');history.className='strategy-modal__asset-cagr';history.textContent=assetHistoryText(ticker);text.append(top,history);left.appendChild(text);const value=document.createElement('span');value.className='strategy-modal__pct';value.textContent=weight+'%';row.append(left,value);return row;}

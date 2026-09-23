@@ -46,6 +46,11 @@ aktif, digambar ulang di canvas pada resolusi 2× supaya tetap tajam saat
 dicetak atau dibagikan. PDF-nya satu halaman berisi gambar yang sama, jadi apa
 yang kamu lihat persis itu yang tersimpan.
 
+Di **Settings → Profil kartu**, kamu bisa menulis nama, memilih salah satu
+avatar, atau mengunggah foto sendiri. Nama dan avatar muncul di kartu JPG dan
+PDF. Foto dipotong persegi, diperkecil sebelum disimpan, dan tetap berada di
+`localStorage` browser ini. Mengganti avatar tidak mengubah alokasi portofolio.
+
 ## Mata uang
 
 Tombol pengaturan di kanan atas menyediakan **IDR** dan **USD**, lengkap dengan
@@ -82,7 +87,12 @@ assets/fonts/            lisensi font
 ```
 
 Isian tersimpan di `localStorage` browser ini saja dan tidak dikirim ke mana
-pun. Halaman pengaturan berisi pilihan mata uang, bahasa, dan tampilan.
+pun. Halaman pengaturan berisi pilihan mata uang, bahasa, dan profil kartu.
+Tombol tema berada di sidebar.
+
+Ikon strategi memakai [Lucide](https://lucide.dev/icons/) (ISC); salinan
+lisensinya ada di `assets/icons/LUCIDE-LICENSE.txt`. Ilustrasi avatar dibuat
+khusus untuk Porsi; file SVG sumber dan PNG tampilannya ada di `assets/avatars/`.
 
 ## Tipografi
 

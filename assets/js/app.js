@@ -869,6 +869,7 @@
         totalLabel: 'Uang yang kamu punya',
         totalText: money(state.total),
         generatedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        profile: window.PORSI_PROFILE ? window.PORSI_PROFILE.get() : null,
         footer: 'Dibuat dengan Porsi — kalkulator alokasi, bukan nasihat investasi.',
         theme: {
           surface: token('--surface') || '#1a1a19',
@@ -955,7 +956,6 @@
     state.theme = next;
     document.documentElement.dataset.theme = next;
     document.documentElement.style.colorScheme = next;
-    $('#theme-label').textContent = next === 'dark' ? 'Tema gelap' : 'Tema terang';
     save();
   }
 
@@ -1037,10 +1037,6 @@
     $('#ccy-options').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-currency]');
       if (btn) setCurrency(btn.dataset.currency);
-    });
-    $('#theme-toggle').addEventListener('click', () => {
-      applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
-      render();
     });
     window.addEventListener('resize', hideTip);
   }

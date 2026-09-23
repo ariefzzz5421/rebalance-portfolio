@@ -24,6 +24,7 @@ function render(){
   $('#currency-menu').innerHTML=Object.entries(prefs.currencies).map(([code,c])=>currencyOption(code,c,current.currency)).join('');
   $('#language-menu').innerHTML=Object.entries(prefs.languages).map(([code,l])=>languageOption(code,l,current.language)).join('');
   prefs.applyLanguage&&prefs.applyLanguage();
+  if(window.PORSI_PROFILE)renderProfile();
 }
 function setSelect(type,open){
   ['currency','language'].forEach(k=>{const root=$(`#${k}-select`),menu=$(`#${k}-menu`),trigger=$(`#${k}-trigger`),isOpen=open&&k===type;root&&root.classList.toggle('is-open',!!isOpen);if(menu)menu.hidden=!isOpen;if(trigger)trigger.setAttribute('aria-expanded',String(!!isOpen));});
@@ -48,10 +49,18 @@ function openConfirm(type,value){
 }
 function closeConfirm(){const sheet=$('#preference-confirm');if(!sheet)return;sheet.classList.remove('on');document.body.classList.remove('locked');setTimeout(()=>{sheet.hidden=true;pending=null;},180);}
 function applyPending(){if(!pending)return;if(pending.type==='currency')prefs.setCurrency(pending.value);else prefs.setLanguage(pending.value);closeConfirm();setTimeout(render,0);}
-function syncAppearance(){const theme=document.documentElement.dataset.theme==='light'?'light':'dark';document.querySelectorAll('[data-theme-choice]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.themeChoice===theme)));}
+function renderProfile(){
+  const profile=window.PORSI_PROFILE.get(),name=$('#profile-name'),grid=$('#avatar-grid'),preview=$('#profile-preview-avatar');
+  if(document.activeElement!==name)name.value=profile.name;
+  grid.innerHTML=window.PORSI_PROFILE.avatars.map(avatar=>`<button class="avatar-choice" type="button" data-avatar-id="${avatar.id}" aria-label="Avatar ${avatar.label}" aria-pressed="${profile.avatarId===avatar.id}"><img src="${avatar.src}" alt="" width="52" height="52"></button>`).join('')+'<button class="avatar-choice avatar-choice--none" type="button" data-avatar-id="" aria-label="Tanpa avatar" aria-pressed="'+String(!profile.avatarId)+'">—</button>';
+  preview.textContent='';
+  if(profile.avatarSrc){const img=document.createElement('img');img.src=profile.avatarSrc;img.alt='';preview.appendChild(img);}else preview.textContent='P';
+  $('#profile-preview-name').textContent=profile.name.trim()||prefs.text('profilePlaceholder');
+  $('.profile-upload').classList.toggle('is-selected',profile.avatarId==='photo');
+}
+function profileStatus(message,error){const status=$('#profile-status');status.textContent=message;status.classList.toggle('is-error',!!error);}
 function boot(){
   render();
-  syncAppearance();
   $('#currency-trigger').addEventListener('click',e=>{e.stopPropagation();setSelect('currency',openSelect!=='currency');});
   $('#language-trigger').addEventListener('click',e=>{e.stopPropagation();setSelect('language',openSelect!=='language');});
   $('#currency-menu').addEventListener('click',e=>{const b=e.target.closest('[data-pref-value]');if(b)openConfirm('currency',b.dataset.prefValue);});
@@ -59,8 +68,10 @@ function boot(){
   document.addEventListener('click',e=>{if(openSelect&&!e.target.closest('.pref-select'))setSelect(null,false);});
   document.querySelectorAll('[data-pref-cancel]').forEach(b=>b.addEventListener('click',closeConfirm));
   $('#preference-confirm-apply').addEventListener('click',applyPending);
-  document.querySelectorAll('[data-theme-choice]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.themeChoice!==document.documentElement.dataset.theme)document.querySelector('.sidebar__theme-btn').click();syncAppearance();}));
-  window.addEventListener('porsi:theme',syncAppearance);
+  $('#profile-name').addEventListener('input',e=>{try{window.PORSI_PROFILE.setName(e.target.value);profileStatus('Tersimpan di browser ini.');}catch{profileStatus('Nama belum tersimpan. Periksa ruang penyimpanan browser.',true);}});
+  $('#avatar-grid').addEventListener('click',e=>{const button=e.target.closest('[data-avatar-id]');if(!button)return;try{window.PORSI_PROFILE.setAvatar(button.dataset.avatarId);profileStatus('Avatar tersimpan.');}catch{profileStatus('Avatar belum tersimpan. Periksa ruang penyimpanan browser.',true);}});
+  $('#profile-photo').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;profileStatus('Memproses foto…');try{await window.PORSI_PROFILE.setPhoto(file);profileStatus('Foto tersimpan dan siap untuk kartu unduhan.');}catch(error){profileStatus(error.message||'Foto tidak dapat disimpan.',true);}finally{e.target.value='';}});
+  window.addEventListener('porsi:profile',renderProfile);
   document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#preference-confirm').hidden)closeConfirm();else if(openSelect)setSelect(null,false);});
   window.addEventListener('porsi:preferences',render);
 }
