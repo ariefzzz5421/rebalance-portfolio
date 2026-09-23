@@ -48,8 +48,9 @@
           <strong id="strategy-return">—</strong>
           <div><span id="strategy-return-label">Total return · 1Y</span><small id="strategy-dates">Menunggu data pasar</small></div>
         </div>
+        <div class="strategy-page__legend" id="strategy-chart-legend" aria-label="Return strategi dan masing-masing aset"></div>
         <div class="strategy-page__plot">
-          <canvas id="strategy-chart" tabindex="0" aria-label="Grafik return strategi. Gunakan panah kiri dan kanan untuk membaca titik data."></canvas>
+          <canvas id="strategy-chart" tabindex="0" aria-label="Grafik perbandingan return strategi dan tiap aset. Gunakan panah kiri dan kanan untuk membaca titik data."></canvas>
           <div class="strategy-page__chart-state" id="strategy-chart-state" role="status">Memuat chart…</div>
           <div class="strategy-page__tooltip" id="strategy-tooltip" aria-hidden="true"></div>
         </div>
@@ -63,7 +64,7 @@
       </aside>
     </section>
 
-    <p class="strategy-page__method" id="strategy-method">Simulasi historis berbobot tetap: setiap aset dibeli sesuai bobot awal lalu dibiarkan bergerak tanpa rebalancing. Data bersumber dari Yahoo Finance; adjusted close dipakai bila tersedia. MAX dibatasi paling lama 10 tahun dan dimulai saat semua aset punya histori bersama. Hasil ini bukan return akun nyata.</p>
+    <p class="strategy-page__method" id="strategy-method">Simulasi historis berbobot tetap: setiap aset dibeli sesuai bobot awal lalu dibiarkan bergerak tanpa rebalancing. Garis aset dan strategi dinormalisasi ke 0% pada titik awal yang sama. Data bersumber dari Yahoo Finance; adjusted close dipakai bila tersedia. MAX dibatasi paling lama 10 tahun dan dimulai saat semua aset punya histori bersama. Hasil ini bukan return akun nyata.</p>
   </main>
   <script src="assets/js/marks.js"></script>
   <script src="assets/js/assets.js"></script>

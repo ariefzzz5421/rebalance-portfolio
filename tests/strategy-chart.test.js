@@ -15,6 +15,10 @@ test('combined chart uses fixed starting weights and buy-and-hold returns', () =
   assert.equal(result.series.at(-1).v, 108);
   assert.ok(Math.abs(result.return - 0.08) < 1e-12);
   assert.ok(Math.abs(result.assets[0].return - 0.2) < 1e-12);
+  assert.equal(result.assets[0].series[0].v, 100);
+  assert.equal(result.assets[0].series.at(-1).v, 120);
+  assert.equal(result.assets[1].series.at(-1).v, 90);
+  assert.deepEqual(result.assets[0].series.map(point => point.t), result.series.map(point => point.t));
 });
 
 test('short frames keep intraday observations rather than collapsing by date', () => {

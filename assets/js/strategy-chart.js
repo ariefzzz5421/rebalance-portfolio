@@ -66,14 +66,20 @@
     positions.forEach(row => row.points.forEach(point => {
       if (point.t > start && point.t < commonEnd) times.add(point.t);
     }));
-    const series = [...times].sort((a, b) => a - b).map(t => ({
-      t,
-      v: 100 * positions.reduce((nav, row) => nav + row.weight * atOrBefore(row.points, t).v / row.first, 0),
-    }));
+    const assetSeries = positions.map(() => []);
+    const series = [...times].sort((a, b) => a - b).map(t => {
+      let nav = 0;
+      positions.forEach((row, index) => {
+        const value = 100 * atOrBefore(row.points, t).v / row.first;
+        assetSeries[index].push({ t, v: value });
+        nav += row.weight * value;
+      });
+      return { t, v: nav };
+    });
     return {
       series, start, end: commonEnd, commonStart,
       return: series[series.length - 1].v / series[0].v - 1,
-      assets: positions.map(row => ({ ticker: row.ticker, weight: row.weight, return: row.last / row.first - 1 })),
+      assets: positions.map((row, index) => ({ ticker: row.ticker, weight: row.weight, return: row.last / row.first - 1, series: assetSeries[index] })),
     };
   }
 

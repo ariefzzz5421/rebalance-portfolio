@@ -3,6 +3,8 @@
 
   const strategies = window.PORSI_STRATEGIES;
   const chartMath = window.StrategyChart;
+  const assetColors = { BTC: '#5ba8ff', HYPE: '#3bc7b7', XAUT: '#f5b64f', USDT: '#b59af2', SPX: '#72b7ff', GOLD: '#e8a948', VT: '#9a9dff', SHV: '#42c6bc', SGOV: '#e8ae61' };
+  const fallbackColors = ['#5ba8ff', '#3bc7b7', '#f5b64f', '#b59af2'];
   const longRanges = new Set(['1Y', '5Y', '10Y', 'MAX']);
   const longCache = new Map();
   const rangeCache = new Map();
@@ -14,6 +16,7 @@
   let range = '1Y';
   let result = null;
   let plotted = [];
+  let plottedAssets = [];
   let geometry = null;
   let hover = null;
   let pinned = false;
@@ -49,14 +52,20 @@
   }
 
   function renderAssetList(returns = new Map()) {
-    $('#strategy-asset-list').innerHTML = strategies[selected].parts.map(([ticker, name, weight]) => {
+    $('#strategy-asset-list').innerHTML = strategies[selected].parts.map(([ticker, name, weight], index) => {
       const icon = window.assetIconHTML ? window.assetIconHTML(ticker, 'sm') : `<span class="strategy-page__asset-fallback">${ticker.slice(0, 1)}</span>`;
       const value = returns.get(ticker);
-      return `<a class="strategy-page__asset" href="asset.html?ticker=${encodeURIComponent(ticker)}">
+      return `<a class="strategy-page__asset" href="asset.html?ticker=${encodeURIComponent(ticker)}" style="--asset-chart-color:${assetColors[ticker] || fallbackColors[index % fallbackColors.length]}">
         ${icon}<span class="strategy-page__asset-name"><strong>${ticker}</strong><small>${name}</small></span>
         <span class="strategy-page__asset-data"><strong>${weight}%</strong><small class="${Number.isFinite(value) ? value >= 0 ? 'is-positive' : 'is-negative' : ''}">${percent(value)}</small></span>
       </a>`;
     }).join('');
+  }
+
+  function renderLegend(assets = []) {
+    const items = [{ ticker: 'Strategi', color: strategies[selected].color, value: result?.return, main: true }]
+      .concat(strategies[selected].parts.map(([ticker], index) => ({ ticker, color: assetColors[ticker] || fallbackColors[index % fallbackColors.length], value: assets.find(asset => asset.ticker === ticker)?.return })));
+    $('#strategy-chart-legend').innerHTML = items.map(item => `<span class="strategy-page__legend-item${item.main ? ' is-main' : ''}" style="--series-color:${item.color}"><i aria-hidden="true"></i><span>${item.ticker}</span><strong>${percent(item.value)}</strong></span>`).join('');
   }
 
   function renderSelection() {
@@ -67,6 +76,7 @@
     $('#strategy-range').value = range;
     $('#strategy-return-label').textContent = `Total return · ${range}`;
     renderAssetList();
+    renderLegend();
   }
 
   function symbolFor(ticker) {
@@ -122,6 +132,8 @@
   function resetChart(message) {
     result = null;
     plotted = [];
+    plottedAssets = [];
+    geometry = null;
     hover = null;
     pinned = false;
     $('#strategy-return').textContent = '—';
@@ -129,6 +141,7 @@
     $('#strategy-dates').textContent = message;
     $('#strategy-asof').textContent = '—';
     renderAssetList();
+    renderLegend();
     hideTooltip();
     draw();
     setState(message, message === 'Memuat histori pasar…');
@@ -162,6 +175,7 @@
       $('#strategy-source').textContent = `Yahoo Finance · ${frame} · ${next.series.length.toLocaleString('id-ID')} titik${fallbackTickers.length ? ` · asumsi $1 ${fallbackTickers.join(', ')}` : ''}`;
       if (fallbackTickers.length) $('#strategy-method').textContent = `${methodText} Data ${fallbackTickers.join(', ')} menggunakan asumsi harga $1 karena histori penyedia tidak tersedia.`;
       renderAssetList(new Map(next.assets.map(asset => [asset.ticker, asset.return])));
+      renderLegend(next.assets);
       setState('');
       draw();
     } catch (error) {
@@ -172,20 +186,21 @@
     }
   }
 
-  function sampleSeries(series, maxPoints) {
-    if (series.length <= maxPoints) return series;
-    const step = Math.ceil((series.length - 1) / (maxPoints - 1));
-    const points = series.filter((_, index) => index % step === 0);
-    if (points[points.length - 1] !== series[series.length - 1]) points.push(series[series.length - 1]);
-    return points;
+  function sampleIndexes(length, maxPoints) {
+    if (length <= maxPoints) return Array.from({ length }, (_, index) => index);
+    const step = Math.ceil((length - 1) / (maxPoints - 1));
+    const indexes = [];
+    for (let index = 0; index < length; index += step) indexes.push(index);
+    if (indexes[indexes.length - 1] !== length - 1) indexes.push(length - 1);
+    return indexes;
   }
 
-  function geometryFor(points, width, height) {
-    const values = points.map(point => point.v - 100);
+  function geometryFor(points, assets, width, height) {
+    const values = points.map(point => point.v - 100).concat(assets.flatMap(asset => asset.points.map(point => point.v - 100)));
     let min = Math.min(0, ...values), max = Math.max(0, ...values);
     const extra = Math.max((max - min) * 0.12, 0.5);
     min -= extra; max += extra;
-    const pad = { left: width < 500 ? 46 : 58, right: 18, top: 18, bottom: 34 };
+    const pad = { left: 12, right: width < 500 ? 52 : 62, top: 18, bottom: 34 };
     return { width, height, pad, min, max, plotWidth: width - pad.left - pad.right, plotHeight: height - pad.top - pad.bottom, start: points[0].t, end: points[points.length - 1].t };
   }
 
@@ -206,8 +221,10 @@
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
     context.clearRect(0, 0, width, height);
     if (!result || result.series.length < 2) return;
-    plotted = sampleSeries(result.series, 420);
-    geometry = geometryFor(plotted, width, height);
+    const indexes = sampleIndexes(result.series.length, 420);
+    plotted = indexes.map(index => result.series[index]);
+    plottedAssets = result.assets.map((asset, index) => ({ ticker: asset.ticker, color: assetColors[asset.ticker] || fallbackColors[index % fallbackColors.length], points: indexes.map(pointIndex => asset.series[pointIndex]) }));
+    geometry = geometryFor(plotted, plottedAssets, width, height);
     const css = getComputedStyle(document.documentElement);
     const muted = css.getPropertyValue('--muted').trim();
     const line = css.getPropertyValue('--line').trim();
@@ -219,12 +236,19 @@
     context.strokeStyle = line;
     context.fillStyle = muted;
     context.lineWidth = 1;
+    const tickPositions = [];
     for (let index = 0; index < 5; index++) {
       const y = g.pad.top + index / 4 * g.plotHeight;
+      tickPositions.push(y);
       const value = g.max - index / 4 * (g.max - g.min);
       context.beginPath(); context.moveTo(g.pad.left, y); context.lineTo(width - g.pad.right, y); context.stroke();
-      context.textAlign = 'right'; context.fillText(`${value > 0 ? '+' : ''}${value.toFixed(0)}%`, g.pad.left - 8, y);
+      context.textAlign = 'left'; context.fillText(`${value > 0 ? '+' : ''}${value.toFixed(0)}%`, width - g.pad.right + 8, y);
     }
+
+    const zeroY = g.pad.top + g.max / (g.max - g.min) * g.plotHeight;
+    if (tickPositions.every(y => Math.abs(y - zeroY) > 16)) context.fillText('0%', width - g.pad.right + 8, zeroY);
+    context.save(); context.setLineDash([3, 4]); context.strokeStyle = muted; context.globalAlpha = 0.45;
+    context.beginPath(); context.moveTo(g.pad.left, zeroY); context.lineTo(width - g.pad.right, zeroY); context.stroke(); context.restore();
 
     context.textBaseline = 'top';
     const ticks = width < 500 ? [0, plotted.length - 1] : [0, Math.floor((plotted.length - 1) / 2), plotted.length - 1];
@@ -236,26 +260,37 @@
 
     const first = xy(plotted[0], g), last = xy(plotted[plotted.length - 1], g);
     const gradient = context.createLinearGradient(0, g.pad.top, 0, height - g.pad.bottom);
-    gradient.addColorStop(0, `${accent}38`); gradient.addColorStop(1, `${accent}00`);
+    gradient.addColorStop(0, `${accent}24`); gradient.addColorStop(1, `${accent}00`);
     context.beginPath(); context.moveTo(first.x, height - g.pad.bottom);
     plotted.forEach(point => { const pointXY = xy(point, g); context.lineTo(pointXY.x, pointXY.y); });
     context.lineTo(last.x, height - g.pad.bottom); context.closePath();
     context.fillStyle = gradient; context.fill();
+    context.lineJoin = 'round'; context.lineCap = 'round';
+    plottedAssets.forEach(asset => {
+      context.beginPath(); asset.points.forEach((point, index) => { const p = xy(point, g); if (index) context.lineTo(p.x, p.y); else context.moveTo(p.x, p.y); });
+      context.strokeStyle = asset.color; context.globalAlpha = 0.86; context.lineWidth = 1.7; context.stroke();
+    });
+    context.globalAlpha = 1;
     context.beginPath(); plotted.forEach((point, index) => { const p = xy(point, g); if (index) context.lineTo(p.x, p.y); else context.moveTo(p.x, p.y); });
-    context.strokeStyle = accent; context.lineWidth = 2.5; context.lineJoin = 'round'; context.lineCap = 'round'; context.stroke();
+    context.strokeStyle = accent; context.lineWidth = 4; context.stroke();
     const active = hover == null ? last : xy(plotted[hover], g);
     if (hover != null) {
       context.save(); context.setLineDash([4, 5]); context.strokeStyle = muted; context.lineWidth = 1;
       context.beginPath(); context.moveTo(active.x, g.pad.top); context.lineTo(active.x, height - g.pad.bottom); context.stroke(); context.restore();
+      plottedAssets.forEach(asset => {
+        const point = xy(asset.points[hover], g);
+        context.fillStyle = asset.color; context.beginPath(); context.arc(point.x, point.y, 3, 0, 2 * Math.PI); context.fill();
+      });
       showTooltip(plotted[hover], active, width);
     } else hideTooltip();
-    context.fillStyle = accent; context.beginPath(); context.arc(active.x, active.y, hover == null ? 4 : 5, 0, 2 * Math.PI); context.fill();
+    context.fillStyle = accent; context.beginPath(); context.arc(active.x, active.y, hover == null ? 5 : 6, 0, 2 * Math.PI); context.fill();
   }
 
   function showTooltip(point, position, width) {
     const tip = $('#strategy-tooltip');
-    tip.innerHTML = `<strong>${percent(point.v / 100 - 1)}</strong><span>${dateLabel(point.t, ['1H', '1D', '1W'].includes(range))}</span><small>Indeks ${point.v.toFixed(2)}</small>`;
-    tip.style.left = `${Math.max(95, Math.min(width - 95, position.x))}px`;
+    const rows = plottedAssets.map(asset => `<span class="strategy-page__tooltip-row" style="--series-color:${asset.color}"><i aria-hidden="true"></i>${asset.ticker}<b>${percent(asset.points[hover].v / 100 - 1)}</b></span>`).join('');
+    tip.innerHTML = `<span class="strategy-page__tooltip-date">${dateLabel(point.t, ['1H', '1D', '1W'].includes(range))}</span><strong>${strategies[selected].short} <b>${percent(point.v / 100 - 1)}</b></strong>${rows}`;
+    tip.style.left = `${Math.max(100, Math.min(width - 100, position.x))}px`;
     tip.style.top = `${Math.max(78, position.y)}px`;
     tip.classList.add('is-visible');
     tip.setAttribute('aria-hidden', 'false');

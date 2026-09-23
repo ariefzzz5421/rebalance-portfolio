@@ -12,6 +12,9 @@ Halaman `strategies.html` dapat dibuka dari ikon grafik di sidebar, tepat di
 atas **Assets**. Pilih salah satu dari tiga strategi preset untuk melihat
 komposisi, grafik gabungan aset berbobot, dan perubahan nilainya dalam persen.
 Dropdown menyediakan **1H, 1D, 1W, 1M, 1Y, 5Y, 10Y, MAX**.
+Grafik membandingkan garis strategi yang lebih tebal dengan garis berwarna
+masing-masing aset. Sumbu persen di kanan dan legenda di atas grafik selalu
+menampilkan skala serta return terakhir tanpa perlu menyentuh grafik.
 
 Grafik dimulai dari indeks 100. Tiap aset dibeli menurut bobot awal strategi,
 lalu dibiarkan bergerak tanpa rebalancing. Persentase di halaman ini adalah
