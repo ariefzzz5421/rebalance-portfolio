@@ -562,10 +562,12 @@
     }
 
     if (!state.parts.length) {
-      const empty = document.createElement('p');
-      empty.className = 'parts__empty';
-      empty.textContent = 'Belum ada porsi. Tambahkan satu untuk mulai membagi.';
-      host.appendChild(empty);
+      if (!host.querySelector('.parts__empty')) {
+        const empty = document.createElement('p');
+        empty.className = 'parts__empty';
+        empty.textContent = 'Belum ada porsi. Tambahkan satu untuk mulai membagi.';
+        host.appendChild(empty);
+      }
     }
     renderBadge();
   }
@@ -652,6 +654,7 @@
     flagHost.appendChild(flagEl(cur().code));
     renderParts();
     renderPie();
+    $('#clear').disabled = state.parts.length === 0;
     save();
   }
 
@@ -689,6 +692,14 @@
     state.parts.forEach((p) => { p.pct = round1(((Number(p.pct) || 0) / sum) * 100); });
     fixRounding();
     sortParts();
+    render();
+  }
+
+  function clearParts() {
+    if (!state.parts.length) return;
+    if (document.activeElement) document.activeElement.blur();
+    state.parts = [];
+    signature = '__clear__';
     render();
   }
 
@@ -952,6 +963,7 @@
 
   function boot() {
     applyTheme(state.theme === 'light' ? 'light' : 'dark');
+    window.addEventListener('porsi:theme', (event) => { state.theme = event.detail.theme; save(); });
     $('#total').value = state.total ? formatInput(state.total) : '';
     renderCurrencyOptions();
     render();
@@ -998,6 +1010,7 @@
     $('#add').addEventListener('click', addPart);
     $('#even').addEventListener('click', splitEvenly);
     $('#fit').addEventListener('click', fitTo100);
+    $('#clear').addEventListener('click', clearParts);
 
     $('#open-settings').addEventListener('click', openSheet);
     $('#ccy-chip').addEventListener('click', openSheet);
@@ -1029,17 +1042,6 @@
       applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
       render();
     });
-    $('#reset').addEventListener('click', () => {
-      if (!confirm('Hapus semua isian dan mulai dari awal?')) return;
-      state = defaults();
-      applyTheme('dark');
-      $('#total').value = '';
-      signature = '';
-      renderCurrencyOptions();
-      render();
-      closeSheet();
-    });
-
     window.addEventListener('resize', hideTip);
   }
 

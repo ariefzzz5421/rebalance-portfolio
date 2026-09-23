@@ -21,5 +21,8 @@
   const sun='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   function syncButton(){const current=document.documentElement.dataset.theme==='light'?'light':'dark',next=current==='dark'?'light':'dark';themeBtn.innerHTML=next==='light'?sun:moon;themeBtn.title=next==='light'?'Light mode':'Dark mode';themeBtn.setAttribute('aria-label',next==='light'?'Gunakan tema terang':'Gunakan tema gelap');themeBtn.setAttribute('aria-pressed',String(current==='light'));}
   function toggleTheme(){const current=document.documentElement.dataset.theme==='light'?'light':'dark',next=current==='dark'?'light':'dark',s=read();s.theme=next;write(s);document.documentElement.dataset.theme=next;document.documentElement.style.colorScheme=next;syncButton();window.dispatchEvent(new CustomEvent('porsi:theme',{detail:{theme:next}}));}
-  themeBtn.addEventListener('click',toggleTheme);syncButton();document.body.prepend(nav);
+  themeBtn.addEventListener('click',toggleTheme);
+  document.addEventListener('DOMContentLoaded',syncButton,{once:true});
+  window.addEventListener('porsi:theme',syncButton);
+  syncButton();document.body.prepend(nav);
 })();

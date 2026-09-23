@@ -24,6 +24,7 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
      proporsional, jadi totalnya tetap 100%.
    - **Bagi rata** — semua porsi disamakan.
    - **Paskan 100%** — porsi yang ada diskalakan supaya jumlahnya pas 100%.
+   - **Clear** — kosongkan semua porsi aktif tanpa mengubah nominal dan preferensi.
 
 Kalau jumlahnya belum 100%, sisanya muncul sebagai potongan abu-abu "Belum
 dibagi" dan lencana di kanan atas berubah warna. Lebih dari 100% juga ditandai.
@@ -81,7 +82,7 @@ assets/fonts/            lisensi font
 ```
 
 Isian tersimpan di `localStorage` browser ini saja dan tidak dikirim ke mana
-pun. Tombol **Hapus semua & mulai lagi** ada di pengaturan.
+pun. Halaman pengaturan berisi pilihan mata uang, bahasa, dan tampilan.
 
 ## Tipografi
 

@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const STORE='porsi.v1',PREF='porsi.preferences.v1',prefs=window.PORSI_PREFS;
+const prefs=window.PORSI_PREFS;
 let openSelect=null,pending=null;
 const $=(s,r)=>(r||document).querySelector(s);
 const LOCAL={
@@ -48,16 +48,19 @@ function openConfirm(type,value){
 }
 function closeConfirm(){const sheet=$('#preference-confirm');if(!sheet)return;sheet.classList.remove('on');document.body.classList.remove('locked');setTimeout(()=>{sheet.hidden=true;pending=null;},180);}
 function applyPending(){if(!pending)return;if(pending.type==='currency')prefs.setCurrency(pending.value);else prefs.setLanguage(pending.value);closeConfirm();setTimeout(render,0);}
-function resetData(){if(!confirm(strings().erase))return;try{localStorage.removeItem(STORE);localStorage.removeItem(PREF);}catch{}location.href='index.html';}
+function syncAppearance(){const theme=document.documentElement.dataset.theme==='light'?'light':'dark';document.querySelectorAll('[data-theme-choice]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.themeChoice===theme)));}
 function boot(){
   render();
+  syncAppearance();
   $('#currency-trigger').addEventListener('click',e=>{e.stopPropagation();setSelect('currency',openSelect!=='currency');});
   $('#language-trigger').addEventListener('click',e=>{e.stopPropagation();setSelect('language',openSelect!=='language');});
   $('#currency-menu').addEventListener('click',e=>{const b=e.target.closest('[data-pref-value]');if(b)openConfirm('currency',b.dataset.prefValue);});
   $('#language-menu').addEventListener('click',e=>{const b=e.target.closest('[data-pref-value]');if(b)openConfirm('language',b.dataset.prefValue);});
   document.addEventListener('click',e=>{if(openSelect&&!e.target.closest('.pref-select'))setSelect(null,false);});
   document.querySelectorAll('[data-pref-cancel]').forEach(b=>b.addEventListener('click',closeConfirm));
-  $('#preference-confirm-apply').addEventListener('click',applyPending);$('#reset-data').addEventListener('click',resetData);
+  $('#preference-confirm-apply').addEventListener('click',applyPending);
+  document.querySelectorAll('[data-theme-choice]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.themeChoice!==document.documentElement.dataset.theme)document.querySelector('.sidebar__theme-btn').click();syncAppearance();}));
+  window.addEventListener('porsi:theme',syncAppearance);
   document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('#preference-confirm').hidden)closeConfirm();else if(openSelect)setSelect(null,false);});
   window.addEventListener('porsi:preferences',render);
 }
