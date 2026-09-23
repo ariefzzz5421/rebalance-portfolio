@@ -6,7 +6,7 @@
 .strategy-select__trigger:hover,.strategy-select.is-open .strategy-select__trigger{border-color:color-mix(in oklab,var(--accent) 55%,var(--line));background:color-mix(in oklab,var(--accent) 5%,var(--surface-2))}
 .strategy-select__trigger:focus-visible,.strategy-option:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .strategy-select__generic-icon{width:36px;height:36px;border-radius:11px;overflow:hidden}.strategy-select__generic-icon .strategy-icon{width:100%;height:100%;border:0;background:transparent}
-.strategy-select__trigger-copy strong{font-size:13.5px}.strategy-select__trigger-copy small{font-size:10px}
+.strategy-select__trigger-copy strong{font-size:13.5px}.strategy-select__trigger-copy small{font-size:10px}.strategy-select__trigger-copy small:empty{display:none}
 .strategy-select__assets{display:block;margin-top:6px;overflow:hidden}
 .strategy-select__assets .strategy-assets{margin:0}.strategy-select__assets .strategy-assets__item{padding:0;border:0;background:transparent}.strategy-select__assets .strategy-assets__item>span:last-child{font-size:10px}
 .strategy-select__assets .asset-icon{width:17px;height:17px;border-radius:5px;box-shadow:none}

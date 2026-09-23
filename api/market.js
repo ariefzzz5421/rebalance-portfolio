@@ -1,7 +1,8 @@
 const VALID=/^[A-Za-z0-9.^=\-]+$/;
 const RANGE_SPECS={
+  '1H':{range:'1d',interval:'1m',ttl:45,windowMs:3600000},
   '1D':{range:'1d',interval:'5m',ttl:60},
-  '1W':{range:'5d',interval:'1h',ttl:120},
+  '1W':{range:'1mo',interval:'1h',ttl:120,windowMs:7*86400000},
   '1M':{range:'1mo',interval:'1d',ttl:300},
   '6M':{range:'6mo',interval:'1d',ttl:600},
   '1Y':{range:'1y',interval:'1d',ttl:900},
@@ -23,7 +24,8 @@ function parseResult(symbol,result,includeCagr){
   return {symbol,price:livePrice,previousClose:Number.isFinite(previousClose)?previousClose:null,currency:meta.currency||null,exchange:meta.exchangeName||null,timezone:meta.exchangeTimezoneName||null,asOf:new Date(endTime).toISOString(),source:'Yahoo Finance',history:chartPoints,totalReturnHistory:returnPoints,cagr,periods};
 }
 async function fetchSummary(symbol){const result=await yahoo(symbol,'10y','1mo'),data=parseResult(symbol,result,true);data.interval='1mo';data.range='10Y-summary';data.history=data.history.slice(-121);delete data.totalReturnHistory;return data;}
-async function fetchRange(symbol,key){const spec=RANGE_SPECS[key];if(!spec)throw new Error('Unsupported range');const result=await yahoo(symbol,spec.range,spec.interval),data=parseResult(symbol,result,false);data.interval=spec.interval;data.range=key;delete data.totalReturnHistory;return data;}
+function trimWindow(points,windowMs){if(!windowMs||!points.length)return points;const start=points[points.length-1].t-windowMs;let first=points.findIndex(p=>p.t>=start);if(first<0)first=points.length-1;return points.slice(Math.max(0,first-1));}
+async function fetchRange(symbol,key){const spec=RANGE_SPECS[key];if(!spec)throw new Error('Unsupported range');const result=await yahoo(symbol,spec.range,spec.interval),data=parseResult(symbol,result,false);data.interval=spec.interval;data.range=key;data.history=trimWindow(data.history,spec.windowMs);data.totalReturnHistory=trimWindow(data.totalReturnHistory,spec.windowMs);return data;}
 async function fetchStrategyHistory(symbol){const result=await yahoo(symbol,'10y','1d'),data=parseResult(symbol,result,false),history=data.totalReturnHistory||[],firstTrade=Number(result&&result.meta&&result.meta.firstTradeDate),availableFromMs=Number.isFinite(firstTrade)&&firstTrade>0?firstTrade*1000:history[0]&&history[0].t;if(history.length<2)throw new Error('Insufficient total-return history');return {symbol,currency:data.currency,source:data.source,totalReturnHistory:history,availableFrom:new Date(availableFromMs).toISOString(),dataFrom:new Date(history[0].t).toISOString(),availableTo:new Date(history[history.length-1].t).toISOString(),stablecoinFallbackUsed:false};}
 async function fetchWithLimit(symbols,limit,loader){const data={},queue=symbols.slice();async function worker(){while(queue.length){const symbol=queue.shift();try{data[symbol]=await loader(symbol);}catch(err){data[symbol]={symbol,error:err&&err.message||'Unavailable'};}}}await Promise.all(Array.from({length:Math.min(limit,symbols.length)},worker));return data;}
 function applyStablecoinFallbacks(data){const ends=Object.values(data).map(v=>v&&v.totalReturnHistory&&v.totalReturnHistory.length?v.totalReturnHistory[v.totalReturnHistory.length-1].t:null).filter(Number.isFinite),endMs=ends.length?Math.min(...ends):Date.now();Object.entries(STABLECOIN_FALLBACK_START).forEach(([symbol,startMs])=>{const current=data[symbol];if(!current||!current.error||!(endMs>startMs))return;data[symbol]={symbol,currency:'USD',source:'Explicit $1 stablecoin fallback',totalReturnHistory:[{t:startMs,v:1},{t:endMs,v:1}],availableFrom:new Date(startMs).toISOString(),dataFrom:new Date(startMs).toISOString(),availableTo:new Date(endMs).toISOString(),stablecoinFallbackUsed:true,fallbackReason:current.error};});return data;}

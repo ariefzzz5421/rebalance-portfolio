@@ -6,6 +6,23 @@ pie chart-nya ikut bergerak.
 
 Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
 
+## Melihat strategi
+
+Halaman `strategies.html` dapat dibuka dari ikon grafik di sidebar, tepat di
+atas **Assets**. Pilih salah satu dari tiga strategi preset untuk melihat
+komposisi, grafik gabungan aset berbobot, dan perubahan nilainya dalam persen.
+Dropdown menyediakan **1H, 1D, 1W, 1M, 1Y, 5Y, 10Y, MAX**.
+
+Grafik dimulai dari indeks 100. Tiap aset dibeli menurut bobot awal strategi,
+lalu dibiarkan bergerak tanpa rebalancing. Persentase di halaman ini adalah
+**total return historis** untuk rentang tanggal yang tertera, bukan CAGR atau
+hasil akun pengguna. Data berasal dari Yahoo Finance melalui `api/market.js`;
+adjusted close dipakai bila tersedia. MAX dibatasi 10 tahun, dan periode yang
+tidak memiliki histori bersama ditampilkan sebagai tidak tersedia. Timeframe
+pendek juga bisa tidak tersedia di luar jam ketika semua pasar terkait aktif.
+Halaman ini membutuhkan API tersebut saat dijalankan; membuka file langsung
+dari disk hanya cocok untuk alat alokasi utama.
+
 ## Cara pakai
 
 1. **Isi uang yang kamu punya** di kolom besar paling atas.

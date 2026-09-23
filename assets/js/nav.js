@@ -8,13 +8,14 @@
   }
   const items=[
     ['portfolio','index.html','Portfolio','<path d="M4 19V9m5 10V5m5 14v-7m5 7V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'],
+    ['strategies','strategies.html','Strategies','<path d="M12 16v5M16 14.639V21M20 10.656V21m22-18-8.646 8.646a.5.5 0 0 1-.708 0L9.354 8.354a.5.5 0 0 0-.707 0L2 15M4 18.463V21M8 14.656V21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>'],
     ['assets','assets.html','Assets','<path d="m12 3.5 6.3 3.6L12 10.8 5.7 7.1 12 3.5Z" fill="currentColor" opacity=".95"/><path d="m5.7 11.2 6.3 3.6 6.3-3.6M5.7 15.2 12 18.8l6.3-3.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18.6" cy="18.2" r="2.3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M18.6 16.9v2.6M17.8 18.2h1.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'],
     ['settings','settings.html','Settings','<path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>']
   ];
   function read(){try{return JSON.parse(localStorage.getItem(STORE)||'{}')||{};}catch{return {};}}
   function write(s){try{localStorage.setItem(STORE,JSON.stringify(s));}catch{}}
   const nav=document.createElement('nav');nav.className='sidebar';nav.setAttribute('aria-label','Navigasi utama');
-  items.forEach((item,i)=>{if(i===2){const d=document.createElement('span');d.className='sidebar__divider';nav.appendChild(d);}const a=document.createElement('a');a.href=item[1];a.className='sidebar__link'+(page===item[0]?' is-active':'');a.title=item[2];a.setAttribute('aria-label',item[2]);a.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${item[3]}</svg>`;nav.appendChild(a);});
+  items.forEach((item,i)=>{if(i===3){const d=document.createElement('span');d.className='sidebar__divider';nav.appendChild(d);}const a=document.createElement('a');a.href=item[1];a.className='sidebar__link'+(page===item[0]?' is-active':'');a.title=item[2];a.setAttribute('aria-label',item[2]);a.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true">${item[3]}</svg>`;nav.appendChild(a);});
   const divider=document.createElement('span');divider.className='sidebar__divider';nav.appendChild(divider);
   const themeBtn=document.createElement('button');themeBtn.type='button';themeBtn.className='sidebar__theme-btn';nav.appendChild(themeBtn);
   const moon='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.4A8.6 8.6 0 0 1 9.6 4a8.6 8.6 0 1 0 10.4 10.4Z" fill="currentColor"/></svg>';
