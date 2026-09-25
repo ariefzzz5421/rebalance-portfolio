@@ -15,8 +15,9 @@ Dropdown menyediakan **1H, 1D, 1W, 1M, 1Y, 5Y, 10Y, MAX**.
 Grafik membandingkan garis strategi yang lebih tebal dengan garis berwarna
 masing-masing aset. Sumbu persen di kanan dan legenda di atas grafik selalu
 menampilkan skala serta return terakhir tanpa perlu menyentuh grafik.
-Klik sebuah garis, tombol legenda, atau **Lihat garis** di kartu aset untuk
-menyorot seri tersebut. Ikon aset dan return pilihan akan ikut diperbarui.
+Klik sebuah garis, tombol legenda, atau seluruh kartu aset untuk menyorot seri
+tersebut. Tombol panah dalam kotak membuka halaman detail aset. Label berwarna
+di tepi kanan grafik mengikuti persentase seri aktif pada titik yang ditunjuk.
 Strategi **Dividen Play** dan **Pension Fund Indo** memakai instrumen yang
 tercatat di Indonesia; tautan riset dan batasan risiko ada di kartu komposisi.
 

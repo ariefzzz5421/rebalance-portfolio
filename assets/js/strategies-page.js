@@ -54,13 +54,14 @@
 
   function renderAssetList(returns = new Map()) {
     $('#strategy-asset-list').innerHTML = strategies[selected].parts.map(([ticker, name, weight], index) => {
-      const icon = window.assetIconHTML ? window.assetIconHTML(ticker, 'sm') : `<span class="strategy-page__asset-fallback">${ticker.slice(0, 1)}</span>`;
+      const icon = window.assetIconHTML ? window.assetIconHTML(ticker, 'md') : `<span class="strategy-page__asset-fallback">${ticker.slice(0, 1)}</span>`;
       const value = returns.get(ticker);
-      return `<div class="strategy-page__asset${activeLine === ticker ? ' is-focused' : ''}" style="--asset-chart-color:${assetColors[ticker] || fallbackColors[index % fallbackColors.length]}">
-        ${icon}<span class="strategy-page__asset-name"><strong>${ticker}</strong><small>${name}</small></span>
-        <span class="strategy-page__asset-data"><strong>${weight}%</strong><small class="${Number.isFinite(value) ? value >= 0 ? 'is-positive' : 'is-negative' : ''}">${percent(value)}</small></span>
-        <button type="button" class="strategy-page__asset-focus" data-line="${ticker}" aria-label="Sorot garis ${ticker}" aria-pressed="${activeLine === ticker}">Lihat garis</button>
-        <a class="strategy-page__asset-detail" href="asset.html?ticker=${encodeURIComponent(ticker)}" aria-label="Detail ${ticker}">↗</a>
+      return `<div class="strategy-page__asset${activeLine === ticker ? ' is-focused' : ''}" data-asset-card="${ticker}" style="--asset-chart-color:${assetColors[ticker] || fallbackColors[index % fallbackColors.length]}">
+        <button type="button" class="strategy-page__asset-select" data-line="${ticker}" aria-label="Sorot garis ${ticker}" aria-pressed="${activeLine === ticker}">
+          ${icon}<span class="strategy-page__asset-name"><strong>${ticker}</strong><small>${name}</small></span>
+          <span class="strategy-page__asset-data"><strong>${weight}%</strong><small class="${Number.isFinite(value) ? value >= 0 ? 'is-positive' : 'is-negative' : ''}">${percent(value)}</small></span>
+        </button>
+        <a class="strategy-page__asset-detail" href="asset.html?ticker=${encodeURIComponent(ticker)}" aria-label="Buka detail ${ticker}" title="Buka detail ${ticker}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>`;
     }).join('');
   }
@@ -87,6 +88,16 @@
     headline.className = value >= 0 ? 'is-positive' : 'is-negative';
     headline.style.fontSize = headline.textContent.length > 12 ? 'clamp(1.65rem,3vw,2.7rem)' : headline.textContent.length > 9 ? 'clamp(1.9rem,3.5vw,3.1rem)' : '';
     $('#strategy-return-label').textContent = `Total return ${label} · ${range}`;
+  }
+
+  function updateEdgeLabel(point, position, color, height) {
+    const badge = $('#strategy-edge-label');
+    if (!badge) return;
+    badge.hidden = false;
+    badge.style.setProperty('--edge-color', color);
+    badge.style.top = `${Math.max(31, Math.min(height - 30, position.y))}px`;
+    badge.querySelector('span').textContent = activeLine === 'strategy' ? 'Strategi' : activeLine;
+    badge.querySelector('strong').textContent = percent(point.v / 100 - 1);
   }
 
   function focusLine(key) {
@@ -170,6 +181,7 @@
     $('#strategy-return').textContent = '—';
     $('#strategy-return').className = '';
     $('#strategy-return').style.fontSize = '';
+    $('#strategy-edge-label').hidden = true;
     $('#strategy-dates').textContent = message;
     $('#strategy-asof').textContent = '—';
     renderAssetList();
@@ -232,7 +244,7 @@
     const extra = Math.max((max - min) * 0.12, 0.5);
     min -= extra; max += extra;
     const axisLength = Math.max(`${min.toFixed(0)}%`.length, `+${max.toFixed(0)}%`.length);
-    const pad = { left: 12, right: Math.min(width * .32, Math.max(width < 500 ? 52 : 62, axisLength * 7 + 16)), top: 18, bottom: 34 };
+    const pad = { left: 12, right: Math.min(width * .36, Math.max(90, axisLength * 7 + 24)), top: 18, bottom: 34 };
     return { width, height, pad, min, max, plotWidth: width - pad.left - pad.right, plotHeight: height - pad.top - pad.bottom, start: points[0].t, end: points[points.length - 1].t };
   }
 
@@ -311,7 +323,11 @@
       if (focused) { context.beginPath(); focused.points.forEach((point, index) => { const p = xy(point, g); if (index) context.lineTo(p.x, p.y); else context.moveTo(p.x, p.y); }); context.strokeStyle = focused.color; context.lineWidth = 4.5; context.stroke(); }
     }
     const focusedPoints = plottedAssets.find(asset => asset.ticker === activeLine)?.points || plotted;
-    const active = xy(focusedPoints[hover == null ? focusedPoints.length - 1 : hover], g);
+    const focusedPoint = focusedPoints[hover == null ? focusedPoints.length - 1 : hover];
+    const active = xy(focusedPoint, g);
+    const activeColor = activeLine === 'strategy' ? accent : plottedAssets.find(asset => asset.ticker === activeLine)?.color || accent;
+    context.save(); context.setLineDash([2, 4]); context.strokeStyle = activeColor; context.globalAlpha = .54; context.lineWidth = 1;
+    context.beginPath(); context.moveTo(g.pad.left, active.y); context.lineTo(width - g.pad.right, active.y); context.stroke(); context.restore();
     if (hover != null) {
       context.save(); context.setLineDash([4, 5]); context.strokeStyle = muted; context.lineWidth = 1;
       context.beginPath(); context.moveTo(active.x, g.pad.top); context.lineTo(active.x, height - g.pad.bottom); context.stroke(); context.restore();
@@ -321,8 +337,9 @@
       });
       showTooltip(plotted[hover], active, width);
     } else hideTooltip();
-    context.fillStyle = activeLine === 'strategy' ? accent : plottedAssets.find(asset => asset.ticker === activeLine)?.color || accent;
+    context.fillStyle = activeColor;
     context.beginPath(); context.arc(active.x, active.y, hover == null ? 5 : 6, 0, 2 * Math.PI); context.fill();
+    updateEdgeLabel(focusedPoint, active, activeColor, height);
   }
 
   function showTooltip(point, position, width) {
@@ -379,7 +396,7 @@
     });
     $('#strategy-range').addEventListener('change', event => { range = event.target.value; $('#strategy-return-label').textContent = `Total return · ${range}`; load(); });
     $('#strategy-chart-legend').addEventListener('click', event => { const button = event.target.closest('[data-line]'); if (button) focusLine(button.dataset.line); });
-    $('#strategy-asset-list').addEventListener('click', event => { const button = event.target.closest('[data-line]'); if (button) focusLine(button.dataset.line); });
+    $('#strategy-asset-list').addEventListener('click', event => { if (event.target.closest('a')) return; const card = event.target.closest('[data-asset-card]'); if (card) focusLine(card.dataset.assetCard); });
     const canvas = $('#strategy-chart');
     canvas.addEventListener('pointermove', pointerIndex, { passive: true });
     canvas.addEventListener('pointerdown', event => { pointerIndex(event); const line = lineAtPointer(event); if (line) focusLine(line); pinned = true; });
