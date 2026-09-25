@@ -3,17 +3,16 @@
 .currencies-page__intro h1{margin:8px 0;font-size:clamp(2.2rem,5vw,4.1rem);letter-spacing:-.055em}
 .currencies-page__intro p{max-width:640px;color:var(--muted);font-size:clamp(13px,1.5vw,15px)}
 .currencies-page__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px;margin-bottom:18px}
-.currencies-page__choice,.currencies-page__base{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:10px;row-gap:10px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);text-align:left;box-shadow:var(--shadow)}
+.currencies-page__choice{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:10px;row-gap:10px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);text-align:left;box-shadow:var(--shadow)}
 .currencies-page__choice{cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}
 .currencies-page__choice:hover{transform:translateY(-2px);border-color:var(--currency-color)}
 .currencies-page__choice.is-active{border-color:var(--currency-color);background:color-mix(in oklab,var(--currency-color) 8%,var(--surface))}
 .currencies-page__choice:focus-visible,.currencies-page__panel select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .currencies-page__choice img{width:32px;height:32px;padding:3px;border-radius:9px;object-fit:contain;background:var(--surface-2)}
-.currencies-page__choice span,.currencies-page__base span:not(.currencies-page__usd){min-width:0}
-.currencies-page__choice strong,.currencies-page__base strong{display:block;font-size:15px}
-.currencies-page__choice small,.currencies-page__base small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:10px}
-.currencies-page__choice b,.currencies-page__base b{grid-column:1/-1;color:var(--muted);font-size:11px;font-weight:700}
-.currencies-page__usd{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--surface-3);font-size:18px;font-weight:800}
+.currencies-page__choice span{min-width:0}
+.currencies-page__choice strong{display:block;font-size:15px}
+.currencies-page__choice small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:10px}
+.currencies-page__choice b{grid-column:1/-1;color:var(--muted);font-size:11px;font-weight:700}
 .currencies-page__panel{padding:clamp(18px,3vw,28px);border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:var(--shadow)}
 .currencies-page__panel-top{display:flex;align-items:start;justify-content:space-between;gap:16px}
 .currencies-page__pair{display:flex;align-items:center;gap:10px}
@@ -34,6 +33,8 @@
 .currencies-page__asof{margin:6px 0 16px}
 .currencies-page__chart-wrap{position:relative;height:clamp(280px,42vw,430px);border-radius:14px;background:color-mix(in oklab,var(--surface-2) 48%,var(--surface))}
 #currency-chart{display:block;width:100%;height:100%;touch-action:pan-y}
+.currencies-page__edge{position:absolute;z-index:2;max-width:calc(100% - 18px);padding:5px 7px;border-radius:6px;background:var(--currency-color,var(--accent));color:#0b1624;font-size:11px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;pointer-events:none;box-shadow:0 3px 14px rgba(0,0,0,.22)}
+.currencies-page__edge[hidden]{display:none}
 .currencies-page__state{position:absolute;inset:0;display:grid;place-items:center;padding:20px;color:var(--muted);font-size:13px;text-align:center}
 .currencies-page__state[hidden]{display:none}
 .currencies-page__tooltip{position:absolute;z-index:1;display:none;flex-direction:column;gap:3px;min-width:175px;padding:10px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface-2);box-shadow:var(--shadow);color:var(--ink);font-size:11px;pointer-events:none;transform:translate(-50%,-110%)}

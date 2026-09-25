@@ -12,11 +12,12 @@
   const formatRate = value => new Intl.NumberFormat('id-ID', { maximumFractionDigits: reversed ? (active.code === 'IDR' ? 2 : 4) : (active.code === 'IDR' ? 8 : 5), minimumFractionDigits: reversed ? 0 : (active.code === 'IDR' ? 6 : 2) }).format(value);
   const pair = item => reversed ? `USD / ${item.code}` : `${item.code} / USD`;
   const rateText = value => reversed ? `1 USD = ${active.code} ${formatRate(value)}` : `1 ${active.code} = $${formatRate(value)}`;
+  const edgeRate = value => reversed ? `${active.code} ${formatRate(value)}` : `$${formatRate(value)}`;
   const percent = value => `${value > 0 ? '+' : ''}${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value)}%`;
   const date = time => new Date(time).toLocaleString('id-ID', ['1H', '1D', '1W'].includes(range) ? { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', year: 'numeric' });
 
   function renderCards() {
-    $('currency-grid').innerHTML = currencies.map(item => `<button type="button" class="currencies-page__choice${active.code === item.code ? ' is-active' : ''}" data-currency="${item.code}" aria-pressed="${active.code === item.code}" style="--currency-color:${item.color}"><img src="assets/flags/${item.flag}.svg" width="32" height="32" alt=""><span><strong>${item.code}</strong><small>${item.name}</small></span><b>${pair(item)}</b></button>`).join('') + '<div class="currencies-page__base"><span class="currencies-page__usd">$</span><span><strong>USD</strong><small>Dolar AS · mata uang acuan</small></span><b>USD / USD = 1</b></div>';
+    $('currency-grid').innerHTML = currencies.map(item => `<button type="button" class="currencies-page__choice${active.code === item.code ? ' is-active' : ''}" data-currency="${item.code}" aria-pressed="${active.code === item.code}" style="--currency-color:${item.color}"><img src="assets/flags/${item.flag}.svg" width="32" height="32" alt=""><span><strong>${item.code}</strong><small>${item.name}</small></span><b>${pair(item)}</b></button>`).join('');
   }
 
   function setState(message) { $('currency-state').textContent = message; $('currency-state').hidden = !message; }
@@ -61,10 +62,11 @@
     const canvas = $('currency-chart'), width = Math.max(1, canvas.clientWidth), height = Math.max(1, canvas.clientHeight), dpr = Math.min(devicePixelRatio || 1, 2);
     canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
     const ctx = canvas.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, width, height);
-    if (points.length < 2) return;
+    const edge = $('currency-edge');
+    if (points.length < 2) { edge.hidden = true; return; }
     const sample = points.length > 480 ? points.filter((_, index) => index % Math.ceil(points.length / 480) === 0 || index === points.length - 1) : points;
     const values = sample.map(p => p.v), low = Math.min(...values), high = Math.max(...values), extra = Math.max((high - low) * .12, high * .0001);
-    const pad = { left: 12, right: width < 500 ? 76 : 92, top: 20, bottom: 35 };
+    const pad = { left: 12, right: width < 500 ? 106 : 116, top: 20, bottom: 35 };
     geometry = { width, height, pad, min: low - extra, max: high + extra, sample, plotWidth: width - pad.left - pad.right, plotHeight: height - pad.top - pad.bottom };
     const g = geometry, x = p => pad.left + (p.t - sample[0].t) / (sample[sample.length - 1].t - sample[0].t) * g.plotWidth, y = p => pad.top + (g.max - p.v) / (g.max - g.min) * g.plotHeight;
     const css = getComputedStyle(document.documentElement), muted = css.getPropertyValue('--muted').trim(), line = css.getPropertyValue('--line').trim();
@@ -73,7 +75,9 @@
     ctx.textBaseline = 'top'; [sample[0], sample[Math.floor((sample.length - 1) / 2)], sample[sample.length - 1]].forEach((p, i) => { if (width < 450 && i === 1) return; ctx.textAlign = i === 0 ? 'left' : i === 2 ? 'right' : 'center'; ctx.fillText(date(p.t), x(p), height - pad.bottom + 10); });
     ctx.beginPath(); sample.forEach((p, i) => i ? ctx.lineTo(x(p), y(p)) : ctx.moveTo(x(p), y(p))); ctx.strokeStyle = active.color; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
     const index = hovered == null ? sample.length - 1 : Math.min(sample.length - 1, hovered), point = sample[index], px = x(point), py = y(point);
+    ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = active.color; ctx.globalAlpha = .4; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(width - pad.right, py); ctx.stroke(); ctx.restore();
     ctx.fillStyle = active.color; ctx.beginPath(); ctx.arc(px, py, hovered == null ? 4.5 : 6, 0, Math.PI * 2); ctx.fill();
+    edge.hidden = false; edge.textContent = edgeRate(point.v); edge.style.left = `${width - pad.right + 6}px`; edge.style.top = `${Math.max(7, Math.min(height - 34, py - 13))}px`; edge.style.setProperty('--currency-color', active.color);
     const tooltip = $('currency-tooltip');
     if (hovered != null) { tooltip.innerHTML = `<strong>${rateText(point.v)}</strong><span>${date(point.t)}</span>`; tooltip.style.left = `${Math.max(88, Math.min(width - 88, px))}px`; tooltip.style.top = `${Math.max(74, py)}px`; tooltip.classList.add('is-visible'); tooltip.setAttribute('aria-hidden', 'false'); }
     else { tooltip.classList.remove('is-visible'); tooltip.setAttribute('aria-hidden', 'true'); }

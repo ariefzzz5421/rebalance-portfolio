@@ -83,7 +83,6 @@ simbol dan format tampilan; **nominal portofolio tidak dikonversi**.
 Halaman `/currencies` menampilkan grafik riwayat IDR, CNY, SGD, dan CHF
 terhadap USD. Tombol di samping nama pasangan membalik arah grafik dan
 persentase (contoh IDR/USD menjadi USD/IDR) dari data pasar yang sama.
-USD/USD selalu 1.
 Grafik kurs ini membutuhkan API ketika dijalankan dan tidak digunakan untuk
 mengonversi nilai portofolio.
 
