@@ -1,5 +1,6 @@
 /* Interaction, dropdown, chart, and performance overrides. */
 .sidebar{backdrop-filter:none;-webkit-backdrop-filter:none}
+@media(max-width:380px){.sidebar{gap:3px;padding:6px}.sidebar__link{width:40px;height:40px}.sidebar__theme-btn{width:40px;height:40px}.sidebar__divider{margin:4px 1px;height:30px}}
 .choice-btn,.sidebar__link,.sidebar__theme-btn,.chart-range,.finance-link,.strategy-select__trigger,.strategy-option,.pref-select__trigger,.pref-select__option{touch-action:manipulation}
 
 /* Richer shared asset badge without changing the official logo itself. */

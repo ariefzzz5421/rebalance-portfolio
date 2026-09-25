@@ -17,6 +17,7 @@
 .strategy-icon{width:36px;height:36px;display:grid;place-items:center;flex:none;border:1px solid color-mix(in oklab,var(--strategy-color) 24%,var(--line));border-radius:11px;background:color-mix(in oklab,var(--strategy-color) 9%,var(--surface-2));color:var(--strategy-color)}
 .strategy-icon__glyph{width:18px;height:18px;display:block;background:currentColor;mask-position:center;mask-size:contain;mask-repeat:no-repeat}
 .strategy-icon__glyph--rocket{mask-image:url('../icons/lucide-rocket.svg')}.strategy-icon__glyph--shield-check{mask-image:url('../icons/lucide-shield-check.svg')}.strategy-icon__glyph--landmark{mask-image:url('../icons/lucide-landmark.svg')}
+.strategy-icon__glyph--coins{mask-image:url('../icons/lucide-coins.svg')}.strategy-icon__glyph--piggy-bank{mask-image:url('../icons/lucide-piggy-bank.svg')}
 .strategy-option__copy>strong{font-size:14px;letter-spacing:-.02em}.strategy-option__copy>small{font-size:11px;line-height:1.4;white-space:normal}
 .strategy-option__metrics{margin-top:9px;gap:5px}.strategy-metric{border:1px solid var(--line);border-radius:8px;padding:4px 7px;gap:5px}.strategy-metric small{font-size:9px}.strategy-metric strong{font-size:10px}
 .strategy-assets{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:10px}.strategy-assets__item{display:inline-flex;align-items:center;gap:4px;padding:3px 6px 3px 3px;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;color:var(--ink-2);font-size:10px;font-weight:700;line-height:1}

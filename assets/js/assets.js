@@ -25,6 +25,7 @@ window.ASSETS = [
   { ticker: 'KLBF', name: 'Kalbe Farma', cls: 'idx', color: '#00843d' },
   { ticker: 'ANTM', name: 'Aneka Tambang', cls: 'idx', color: '#d4a017' },
   { ticker: 'GOTO', name: 'GoTo Gojek Tokopedia', cls: 'idx', color: '#00aa13' },
+  { ticker: 'UNTR', name: 'United Tractors', cls: 'idx', color: '#e8ac35' },
 
   /* ── Saham Amerika ──────────────────────────────────────────────────────── */
   { ticker: 'AAPL', name: 'Apple', cls: 'us', color: '#555555' },
@@ -74,6 +75,7 @@ window.ASSETS = [
   { ticker: 'GOVT', name: 'iShares U.S. Treasury Bond ETF', cls: 'bond', color: '#00a651' },
   { ticker: 'IEF', name: 'iShares 7-10 Year Treasury Bond ETF', cls: 'bond', color: '#00a651' },
   { ticker: 'BND', name: 'Vanguard Total Bond Market ETF', cls: 'bond', color: '#96151d' },
+  { ticker: 'XISB', name: 'Premier ETF Indonesia Sovereign Bonds', cls: 'bond', color: '#608acf' },
 
   /* ── Kas & setara / ultra-short fixed income ───────────────────────────── */
   { ticker: 'USFR', name: 'WisdomTree Floating Rate Treasury Fund', cls: 'cash', color: '#4f8a3a' },

@@ -1,0 +1,40 @@
+.currencies-page{padding-bottom:70px}
+.currencies-page__intro{margin:24px 0 28px}
+.currencies-page__intro h1{margin:8px 0;font-size:clamp(2.2rem,5vw,4.1rem);letter-spacing:-.055em}
+.currencies-page__intro p{max-width:640px;color:var(--muted);font-size:clamp(13px,1.5vw,15px)}
+.currencies-page__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:10px;margin-bottom:18px}
+.currencies-page__choice,.currencies-page__base{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:10px;row-gap:10px;min-width:0;padding:15px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);text-align:left;box-shadow:var(--shadow)}
+.currencies-page__choice{cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}
+.currencies-page__choice:hover{transform:translateY(-2px);border-color:var(--currency-color)}
+.currencies-page__choice.is-active{border-color:var(--currency-color);background:color-mix(in oklab,var(--currency-color) 8%,var(--surface))}
+.currencies-page__choice:focus-visible,.currencies-page__panel select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.currencies-page__choice img{width:32px;height:32px;padding:3px;border-radius:9px;object-fit:contain;background:var(--surface-2)}
+.currencies-page__choice span,.currencies-page__base span:not(.currencies-page__usd){min-width:0}
+.currencies-page__choice strong,.currencies-page__base strong{display:block;font-size:15px}
+.currencies-page__choice small,.currencies-page__base small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:10px}
+.currencies-page__choice b,.currencies-page__base b{grid-column:1/-1;color:var(--muted);font-size:11px;font-weight:700}
+.currencies-page__usd{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--surface-3);font-size:18px;font-weight:800}
+.currencies-page__panel{padding:clamp(18px,3vw,28px);border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:var(--shadow)}
+.currencies-page__panel-top{display:flex;align-items:start;justify-content:space-between;gap:16px}
+.currencies-page__eyebrow{color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
+.currencies-page__panel h2{margin:4px 0;font-size:clamp(20px,2.7vw,28px)}
+.currencies-page__panel-top p,.currencies-page__asof,.currencies-page__note{color:var(--muted);font-size:11px}
+.currencies-page__panel label{display:flex;align-items:center;gap:8px;flex:none;color:var(--muted);font-size:11px;font-weight:700}
+.currencies-page__panel select{max-width:190px;padding:10px 13px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface-2);color:var(--ink);font:inherit;cursor:pointer}
+.currencies-page__headline{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-top:28px;font-variant-numeric:tabular-nums}
+.currencies-page__headline strong{min-width:0;max-width:100%;font-size:clamp(1.8rem,4.5vw,3.5rem);line-height:1.1;letter-spacing:-.05em;overflow-wrap:anywhere}
+.currencies-page__headline span{font-size:14px;font-weight:800}
+.currencies-page__headline .is-positive{color:var(--good)}
+.currencies-page__headline .is-negative{color:var(--crit)}
+.currencies-page__asof{margin:6px 0 16px}
+.currencies-page__chart-wrap{position:relative;height:clamp(280px,42vw,430px);border-radius:14px;background:color-mix(in oklab,var(--surface-2) 48%,var(--surface))}
+#currency-chart{display:block;width:100%;height:100%;touch-action:pan-y}
+.currencies-page__state{position:absolute;inset:0;display:grid;place-items:center;padding:20px;color:var(--muted);font-size:13px;text-align:center}
+.currencies-page__state[hidden]{display:none}
+.currencies-page__tooltip{position:absolute;z-index:1;display:none;flex-direction:column;gap:3px;min-width:175px;padding:10px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface-2);box-shadow:var(--shadow);color:var(--ink);font-size:11px;pointer-events:none;transform:translate(-50%,-110%)}
+.currencies-page__tooltip.is-visible{display:flex}
+.currencies-page__tooltip span{color:var(--muted)}
+.currencies-page__note{max-width:850px;margin:16px 0 0;line-height:1.6}
+@media(max-width:620px){.currencies-page__panel-top{flex-wrap:wrap}.currencies-page__panel label{width:100%;justify-content:space-between}.currencies-page__panel select{width:min(65%,190px)}.currencies-page__headline{margin-top:20px}.currencies-page__chart-wrap{height:300px}}
+@media(prefers-reduced-motion:reduce){.currencies-page__choice{transition:none}}
+@media(max-width:380px){.sidebar{gap:3px;padding:6px}.sidebar__link{width:40px;height:40px}.sidebar__theme-btn{width:40px;height:40px}.sidebar__divider{margin:4px 1px;height:30px}}

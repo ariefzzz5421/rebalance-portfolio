@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="id" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Pantau nilai IDR, CNY, SGD, dan CHF dalam dolar AS dengan data historis pasar.">
+  <title>Kurs mata uang — Porsi</title>
+  <script>try{const s=JSON.parse(localStorage.getItem('porsi.v1')||'{}');if(s.theme)document.documentElement.dataset.theme=s.theme}catch{}</script>
+  <link rel="stylesheet" href="assets/css/font.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/features.css">
+  <link rel="stylesheet" href="assets/css/ux-fixes.css">
+  <link rel="stylesheet" href="assets/css/refinements.css">
+  <link rel="stylesheet" href="assets/css/currencies-page.css">
+</head>
+<body data-page="currencies">
+  <div class="glow" aria-hidden="true"></div>
+  <header class="top top--plain"><p class="wordmark">Porsi</p></header>
+  <main class="wrap currencies-page">
+    <section class="currencies-page__intro">
+      <div class="page-head__eyebrow">Market data</div>
+      <h1>Kurs mata uang.</h1>
+      <p>Lihat pergerakan mata uang yang tersedia di Porsi terhadap dolar AS. Pilih mata uang untuk membuka riwayatnya.</p>
+    </section>
+    <div class="currencies-page__grid" id="currency-grid" aria-label="Pilih mata uang"></div>
+    <section class="currencies-page__panel" aria-label="Grafik kurs">
+      <div class="currencies-page__panel-top">
+        <div><span class="currencies-page__eyebrow">USD sebagai acuan</span><h2 id="currency-title">IDR / USD</h2><p id="currency-subtitle">Nilai 1 IDR dalam dolar AS</p></div>
+        <label for="currency-range">Timeframe <select id="currency-range"><option value="1H">1H (1 Jam)</option><option value="1D">1D (1 Hari)</option><option value="1W">1W (1 Minggu)</option><option value="1M">1M (1 Bulan)</option><option value="1Y" selected>1Y (1 Tahun)</option><option value="5Y">5Y (5 Tahun)</option><option value="10Y">10Y (10 Tahun)</option><option value="MAX">MAX (10 Tahun)</option></select></label>
+      </div>
+      <div class="currencies-page__headline"><strong id="currency-price">—</strong><span id="currency-change">—</span></div>
+      <p class="currencies-page__asof" id="currency-asof">Memuat data pasar…</p>
+      <div class="currencies-page__chart-wrap">
+        <canvas id="currency-chart" tabindex="0" aria-label="Grafik kurs interaktif. Gunakan panah kiri dan kanan untuk membaca tiap titik."></canvas>
+        <div class="currencies-page__state" id="currency-state" role="status">Memuat histori kurs…</div>
+        <div class="currencies-page__tooltip" id="currency-tooltip" aria-hidden="true"></div>
+      </div>
+      <p class="currencies-page__note">Sumber: Yahoo Finance, harga penutupan pasangan USD/mata uang pilihan yang dibalik menjadi nilai 1 unit mata uang dalam USD. Persentase menunjukkan perubahan nilai mata uang tersebut terhadap USD selama periode terpilih. USD/USD selalu 1. Kurs pasar dapat berbeda dari kurs transaksi bank dan tidak mengubah nominal portofolio kamu.</p>
+    </section>
+  </main>
+  <script src="assets/js/nav.js"></script>
+  <script src="assets/js/timeframe-labels.js"></script>
+  <script src="assets/js/fx-chart.js"></script>
+  <script src="assets/js/currencies-page.js"></script>
+</body>
+</html>

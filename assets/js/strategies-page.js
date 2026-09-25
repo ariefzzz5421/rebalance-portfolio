@@ -3,7 +3,7 @@
 
   const strategies = window.PORSI_STRATEGIES;
   const chartMath = window.StrategyChart;
-  const assetColors = { BTC: '#5ba8ff', HYPE: '#3bc7b7', XAUT: '#f5b64f', USDT: '#b59af2', SPX: '#72b7ff', GOLD: '#e8a948', VT: '#9a9dff', SHV: '#42c6bc', SGOV: '#e8ae61' };
+  const assetColors = { BTC: '#5ba8ff', HYPE: '#3bc7b7', XAUT: '#f5b64f', USDT: '#b59af2', SPX: '#72b7ff', GOLD: '#e8a948', VT: '#9a9dff', SHV: '#42c6bc', SGOV: '#e8ae61', BBCA: '#5ba8ff', BMRI: '#be9aff', TLKM: '#ef786e', UNTR: '#eebc62', XISB: '#66c6c2', KLBF: '#a1b8ff' };
   const fallbackColors = ['#5ba8ff', '#3bc7b7', '#f5b64f', '#b59af2'];
   const longRanges = new Set(['1Y', '5Y', '10Y', 'MAX']);
   const longCache = new Map();
@@ -13,6 +13,7 @@
   const queryKey = new URLSearchParams(location.search).get('strategy');
   const methodText = $('#strategy-method').textContent;
   let selected = strategies[queryKey] ? queryKey : keys[0];
+  let activeLine = 'strategy';
   let range = '1Y';
   let result = null;
   let plotted = [];
@@ -55,17 +56,46 @@
     $('#strategy-asset-list').innerHTML = strategies[selected].parts.map(([ticker, name, weight], index) => {
       const icon = window.assetIconHTML ? window.assetIconHTML(ticker, 'sm') : `<span class="strategy-page__asset-fallback">${ticker.slice(0, 1)}</span>`;
       const value = returns.get(ticker);
-      return `<a class="strategy-page__asset" href="asset.html?ticker=${encodeURIComponent(ticker)}" style="--asset-chart-color:${assetColors[ticker] || fallbackColors[index % fallbackColors.length]}">
+      return `<div class="strategy-page__asset${activeLine === ticker ? ' is-focused' : ''}" style="--asset-chart-color:${assetColors[ticker] || fallbackColors[index % fallbackColors.length]}">
         ${icon}<span class="strategy-page__asset-name"><strong>${ticker}</strong><small>${name}</small></span>
         <span class="strategy-page__asset-data"><strong>${weight}%</strong><small class="${Number.isFinite(value) ? value >= 0 ? 'is-positive' : 'is-negative' : ''}">${percent(value)}</small></span>
-      </a>`;
+        <button type="button" class="strategy-page__asset-focus" data-line="${ticker}" aria-label="Sorot garis ${ticker}" aria-pressed="${activeLine === ticker}">Lihat garis</button>
+        <a class="strategy-page__asset-detail" href="asset.html?ticker=${encodeURIComponent(ticker)}" aria-label="Detail ${ticker}">↗</a>
+      </div>`;
     }).join('');
   }
 
   function renderLegend(assets = []) {
-    const items = [{ ticker: 'Strategi', color: strategies[selected].color, value: result?.return, main: true }]
+    const items = [{ ticker: 'Strategi', key: 'strategy', color: strategies[selected].color, value: result?.return, main: true }]
       .concat(strategies[selected].parts.map(([ticker], index) => ({ ticker, color: assetColors[ticker] || fallbackColors[index % fallbackColors.length], value: assets.find(asset => asset.ticker === ticker)?.return })));
-    $('#strategy-chart-legend').innerHTML = items.map(item => `<span class="strategy-page__legend-item${item.main ? ' is-main' : ''}" style="--series-color:${item.color}"><i aria-hidden="true"></i><span>${item.ticker}</span><strong>${percent(item.value)}</strong></span>`).join('');
+    $('#strategy-chart-legend').innerHTML = items.map(item => `<button type="button" class="strategy-page__legend-item${item.main ? ' is-main' : ''}${activeLine === (item.key || item.ticker) ? ' is-focused' : ''}" data-line="${item.key || item.ticker}" aria-pressed="${activeLine === (item.key || item.ticker)}" style="--series-color:${item.color}">${item.main ? '<i aria-hidden="true"></i>' : window.assetIconHTML(item.ticker, 'sm')}<span>${item.ticker}</span><strong>${percent(item.value)}</strong></button>`).join('');
+  }
+
+  function renderResearch() {
+    const strategy = strategies[selected], host = $('#strategy-research');
+    host.hidden = !strategy.research;
+    host.innerHTML = strategy.research ? `<strong>Dasar pilihan</strong><p>${strategy.note}</p><div>${strategy.research.map(([label, url]) => `<a href="${url}" target="_blank" rel="noopener noreferrer">${label} ↗</a>`).join('')}</div>` : '';
+  }
+
+  function updateHeadline() {
+    if (!result) return;
+    const asset = result.assets.find(item => item.ticker === activeLine);
+    const value = asset ? asset.return : result.return;
+    const label = asset ? asset.ticker : 'Strategi';
+    const headline = $('#strategy-return');
+    headline.textContent = percent(value);
+    headline.className = value >= 0 ? 'is-positive' : 'is-negative';
+    headline.style.fontSize = headline.textContent.length > 12 ? 'clamp(1.65rem,3vw,2.7rem)' : headline.textContent.length > 9 ? 'clamp(1.9rem,3.5vw,3.1rem)' : '';
+    $('#strategy-return-label').textContent = `Total return ${label} · ${range}`;
+  }
+
+  function focusLine(key) {
+    if (key !== 'strategy' && !strategies[selected].parts.some(([ticker]) => ticker === key)) return;
+    activeLine = key;
+    renderLegend(result?.assets || []);
+    renderAssetList(new Map(result?.assets.map(asset => [asset.ticker, asset.return]) || []));
+    updateHeadline();
+    scheduleDraw();
   }
 
   function renderSelection() {
@@ -77,6 +107,7 @@
     $('#strategy-return-label').textContent = `Total return · ${range}`;
     renderAssetList();
     renderLegend();
+    renderResearch();
   }
 
   function symbolFor(ticker) {
@@ -138,6 +169,7 @@
     pinned = false;
     $('#strategy-return').textContent = '—';
     $('#strategy-return').className = '';
+    $('#strategy-return').style.fontSize = '';
     $('#strategy-dates').textContent = message;
     $('#strategy-asof').textContent = '—';
     renderAssetList();
@@ -168,8 +200,7 @@
       if (frame === '1H' && Date.now() - next.end > 2 * 3600000) throw new Error('Tidak ada data bersama dalam dua jam terakhir. Coba 1D atau timeframe lain.');
       result = next;
       const short = ['1H', '1D', '1W'].includes(frame);
-      $('#strategy-return').textContent = percent(next.return);
-      $('#strategy-return').className = next.return >= 0 ? 'is-positive' : 'is-negative';
+      updateHeadline();
       $('#strategy-dates').textContent = `${dateLabel(next.start, short)} → ${dateLabel(next.end, short)}`;
       $('#strategy-asof').textContent = `Titik bersama terakhir: ${dateLabel(next.end, short)}`;
       $('#strategy-source').textContent = `Yahoo Finance · ${frame} · ${next.series.length.toLocaleString('id-ID')} titik${fallbackTickers.length ? ` · asumsi $1 ${fallbackTickers.join(', ')}` : ''}`;
@@ -200,7 +231,8 @@
     let min = Math.min(0, ...values), max = Math.max(0, ...values);
     const extra = Math.max((max - min) * 0.12, 0.5);
     min -= extra; max += extra;
-    const pad = { left: 12, right: width < 500 ? 52 : 62, top: 18, bottom: 34 };
+    const axisLength = Math.max(`${min.toFixed(0)}%`.length, `+${max.toFixed(0)}%`.length);
+    const pad = { left: 12, right: Math.min(width * .32, Math.max(width < 500 ? 52 : 62, axisLength * 7 + 16)), top: 18, bottom: 34 };
     return { width, height, pad, min, max, plotWidth: width - pad.left - pad.right, plotHeight: height - pad.top - pad.bottom, start: points[0].t, end: points[points.length - 1].t };
   }
 
@@ -268,28 +300,37 @@
     context.lineJoin = 'round'; context.lineCap = 'round';
     plottedAssets.forEach(asset => {
       context.beginPath(); asset.points.forEach((point, index) => { const p = xy(point, g); if (index) context.lineTo(p.x, p.y); else context.moveTo(p.x, p.y); });
-      context.strokeStyle = asset.color; context.globalAlpha = 0.86; context.lineWidth = 1.7; context.stroke();
+      context.strokeStyle = asset.color; context.globalAlpha = activeLine === 'strategy' ? 0.64 : activeLine === asset.ticker ? 1 : 0.18;
+      context.lineWidth = activeLine === asset.ticker ? 4.5 : 1.6; context.stroke();
     });
     context.globalAlpha = 1;
     context.beginPath(); plotted.forEach((point, index) => { const p = xy(point, g); if (index) context.lineTo(p.x, p.y); else context.moveTo(p.x, p.y); });
-    context.strokeStyle = accent; context.lineWidth = 4; context.stroke();
-    const active = hover == null ? last : xy(plotted[hover], g);
+    context.strokeStyle = accent; context.globalAlpha = activeLine === 'strategy' ? 1 : 0.32; context.lineWidth = activeLine === 'strategy' ? 4.5 : 2; context.stroke(); context.globalAlpha = 1;
+    if (activeLine !== 'strategy') {
+      const focused = plottedAssets.find(asset => asset.ticker === activeLine);
+      if (focused) { context.beginPath(); focused.points.forEach((point, index) => { const p = xy(point, g); if (index) context.lineTo(p.x, p.y); else context.moveTo(p.x, p.y); }); context.strokeStyle = focused.color; context.lineWidth = 4.5; context.stroke(); }
+    }
+    const focusedPoints = plottedAssets.find(asset => asset.ticker === activeLine)?.points || plotted;
+    const active = xy(focusedPoints[hover == null ? focusedPoints.length - 1 : hover], g);
     if (hover != null) {
       context.save(); context.setLineDash([4, 5]); context.strokeStyle = muted; context.lineWidth = 1;
       context.beginPath(); context.moveTo(active.x, g.pad.top); context.lineTo(active.x, height - g.pad.bottom); context.stroke(); context.restore();
       plottedAssets.forEach(asset => {
         const point = xy(asset.points[hover], g);
-        context.fillStyle = asset.color; context.beginPath(); context.arc(point.x, point.y, 3, 0, 2 * Math.PI); context.fill();
+        context.fillStyle = asset.color; context.beginPath(); context.arc(point.x, point.y, activeLine === asset.ticker ? 5 : 3, 0, 2 * Math.PI); context.fill();
       });
       showTooltip(plotted[hover], active, width);
     } else hideTooltip();
-    context.fillStyle = accent; context.beginPath(); context.arc(active.x, active.y, hover == null ? 5 : 6, 0, 2 * Math.PI); context.fill();
+    context.fillStyle = activeLine === 'strategy' ? accent : plottedAssets.find(asset => asset.ticker === activeLine)?.color || accent;
+    context.beginPath(); context.arc(active.x, active.y, hover == null ? 5 : 6, 0, 2 * Math.PI); context.fill();
   }
 
   function showTooltip(point, position, width) {
     const tip = $('#strategy-tooltip');
-    const rows = plottedAssets.map(asset => `<span class="strategy-page__tooltip-row" style="--series-color:${asset.color}"><i aria-hidden="true"></i>${asset.ticker}<b>${percent(asset.points[hover].v / 100 - 1)}</b></span>`).join('');
-    tip.innerHTML = `<span class="strategy-page__tooltip-date">${dateLabel(point.t, ['1H', '1D', '1W'].includes(range))}</span><strong>${strategies[selected].short} <b>${percent(point.v / 100 - 1)}</b></strong>${rows}`;
+    const rows = plottedAssets.map(asset => `<span class="strategy-page__tooltip-row" style="--series-color:${asset.color}">${window.assetIconHTML(asset.ticker, 'sm')}${asset.ticker}<b>${percent(asset.points[hover].v / 100 - 1)}</b></span>`).join('');
+    const selectedAsset = plottedAssets.find(asset => asset.ticker === activeLine);
+    const focusedValue = selectedAsset ? selectedAsset.points[hover].v : point.v;
+    tip.innerHTML = `<span class="strategy-page__tooltip-date">${dateLabel(point.t, ['1H', '1D', '1W'].includes(range))}</span><strong>${activeLine === 'strategy' ? strategies[selected].short : activeLine} <b>${percent(focusedValue / 100 - 1)}</b></strong>${rows}`;
     tip.style.left = `${Math.max(100, Math.min(width - 100, position.x))}px`;
     tip.style.top = `${Math.max(78, position.y)}px`;
     tip.classList.add('is-visible');
@@ -317,24 +358,37 @@
     scheduleDraw();
   }
 
+  function lineAtPointer(event) {
+    if (hover == null || !geometry) return null;
+    const y = event.clientY - $('#strategy-chart').getBoundingClientRect().top;
+    const candidates = [{ key: 'strategy', point: plotted[hover] }, ...plottedAssets.map(asset => ({ key: asset.ticker, point: asset.points[hover] }))];
+    const nearest = candidates.map(item => ({ key: item.key, distance: Math.abs(xy(item.point, geometry).y - y) })).sort((a, b) => a.distance - b.distance)[0];
+    return nearest?.distance <= 22 ? nearest.key : null;
+  }
+
   function boot() {
+    window.PORSI_TIMEFRAMES?.apply($('#strategy-range'));
     renderSelection();
     $('#strategy-picker').addEventListener('click', event => {
       const choice = event.target.closest('[data-strategy]');
       if (!choice || choice.dataset.strategy === selected) return;
       selected = choice.dataset.strategy;
+      activeLine = 'strategy';
       const url = new URL(location.href); url.searchParams.set('strategy', selected); history.replaceState(null, '', url);
       renderSelection(); load();
     });
     $('#strategy-range').addEventListener('change', event => { range = event.target.value; $('#strategy-return-label').textContent = `Total return · ${range}`; load(); });
+    $('#strategy-chart-legend').addEventListener('click', event => { const button = event.target.closest('[data-line]'); if (button) focusLine(button.dataset.line); });
+    $('#strategy-asset-list').addEventListener('click', event => { const button = event.target.closest('[data-line]'); if (button) focusLine(button.dataset.line); });
     const canvas = $('#strategy-chart');
     canvas.addEventListener('pointermove', pointerIndex, { passive: true });
-    canvas.addEventListener('pointerdown', event => { pointerIndex(event); pinned = !pinned; });
+    canvas.addEventListener('pointerdown', event => { pointerIndex(event); const line = lineAtPointer(event); if (line) focusLine(line); pinned = true; });
     canvas.addEventListener('pointerleave', () => { if (!pinned) { hover = null; scheduleDraw(); } });
     canvas.addEventListener('keydown', event => {
-      if (!['ArrowLeft', 'ArrowRight', 'Escape'].includes(event.key) || !plotted.length) return;
+      if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Escape'].includes(event.key) || !plotted.length) return;
       event.preventDefault();
       if (event.key === 'Escape') { hover = null; pinned = false; }
+      else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') { const lines = ['strategy', ...strategies[selected].parts.map(([ticker]) => ticker)]; focusLine(lines[(lines.indexOf(activeLine) + (event.key === 'ArrowDown' ? 1 : lines.length - 1)) % lines.length]); }
       else { hover = Math.max(0, Math.min(plotted.length - 1, (hover == null ? plotted.length - 1 : hover) + (event.key === 'ArrowRight' ? 1 : -1))); pinned = true; }
       scheduleDraw();
     });

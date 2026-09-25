@@ -9,12 +9,16 @@ Tanpa framework, tanpa build step, tanpa server. Buka `index.html`, selesai.
 ## Melihat strategi
 
 Halaman `strategies.html` dapat dibuka dari ikon grafik di sidebar, tepat di
-atas **Assets**. Pilih salah satu dari tiga strategi preset untuk melihat
+atas **Kurs** dan **Assets**. Pilih salah satu dari lima strategi preset untuk melihat
 komposisi, grafik gabungan aset berbobot, dan perubahan nilainya dalam persen.
 Dropdown menyediakan **1H, 1D, 1W, 1M, 1Y, 5Y, 10Y, MAX**.
 Grafik membandingkan garis strategi yang lebih tebal dengan garis berwarna
 masing-masing aset. Sumbu persen di kanan dan legenda di atas grafik selalu
 menampilkan skala serta return terakhir tanpa perlu menyentuh grafik.
+Klik sebuah garis, tombol legenda, atau **Lihat garis** di kartu aset untuk
+menyorot seri tersebut. Ikon aset dan return pilihan akan ikut diperbarui.
+Strategi **Dividen Play** dan **Pension Fund Indo** memakai instrumen yang
+tercatat di Indonesia; tautan riset dan batasan risiko ada di kartu komposisi.
 
 Grafik dimulai dari indeks 100. Tiap aset dibeli menurut bobot awal strategi,
 lalu dibiarkan bergerak tanpa rebalancing. Persentase di halaman ini adalah
@@ -73,10 +77,13 @@ PDF. Foto dipotong persegi, diperkecil sebelum disimpan, dan tetap berada di
 
 ## Mata uang
 
-Tombol pengaturan di kanan atas menyediakan **IDR** dan **USD**, lengkap dengan
-bendera negaranya. Pilihan ini mengubah simbol, pemisah ribuan, dan jumlah
-desimal — **nominalnya tidak dikonversi**, karena aplikasi ini tidak memakai
-data kurs.
+Settings menyediakan **IDR, USD, CNY, SGD, dan CHF**. Pilihan ini mengubah
+simbol dan format tampilan; **nominal portofolio tidak dikonversi**.
+Halaman `currencies.html` menampilkan grafik riwayat nilai IDR, CNY, SGD,
+dan CHF dalam USD. Data pasangan USD/mata uang dari API pasar dibalik untuk
+menampilkan nilai 1 unit mata uang dalam USD. USD/USD selalu 1.
+Grafik kurs ini membutuhkan API ketika dijalankan dan tidak digunakan untuk
+mengonversi nilai portofolio.
 
 | | Simbol | Format | Desimal |
 |---|---|---|---|
@@ -91,7 +98,8 @@ open index.html            # cukup itu
 python3 -m http.server 8000   # kalau lebih suka lewat server statis
 ```
 
-Deploy ke hosting statis mana pun tanpa langkah build.
+Alat alokasi bisa dibuka sebagai file statis. Grafik aset, strategi, dan kurs
+memerlukan endpoint `api/market.js` pada hosting yang mendukung fungsi Node.
 
 ## Struktur
 

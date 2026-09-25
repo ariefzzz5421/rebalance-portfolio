@@ -39,8 +39,8 @@
           <label class="strategy-page__range-label" for="strategy-range">
             <span>Timeframe</span>
             <select id="strategy-range" aria-label="Pilih timeframe chart strategi">
-              <option value="1H">1H</option><option value="1D">1D</option><option value="1W">1W</option><option value="1M">1M</option>
-              <option value="1Y" selected>1Y</option><option value="5Y">5Y</option><option value="10Y">10Y</option><option value="MAX">MAX</option>
+              <option value="1H">1H (1 Jam)</option><option value="1D">1D (1 Hari)</option><option value="1W">1W (1 Minggu)</option><option value="1M">1M (1 Bulan)</option>
+              <option value="1Y" selected>1Y (1 Tahun)</option><option value="5Y">5Y (5 Tahun)</option><option value="10Y">10Y (10 Tahun)</option><option value="MAX">MAX (Semua histori)</option>
             </select>
           </label>
         </div>
@@ -50,7 +50,7 @@
         </div>
         <div class="strategy-page__legend" id="strategy-chart-legend" aria-label="Return strategi dan masing-masing aset"></div>
         <div class="strategy-page__plot">
-          <canvas id="strategy-chart" tabindex="0" aria-label="Grafik perbandingan return strategi dan tiap aset. Gunakan panah kiri dan kanan untuk membaca titik data."></canvas>
+          <canvas id="strategy-chart" tabindex="0" aria-label="Grafik perbandingan return. Klik garis untuk memilih; panah atas dan bawah memilih garis, panah kiri dan kanan membaca waktu."></canvas>
           <div class="strategy-page__chart-state" id="strategy-chart-state" role="status">Memuat chart…</div>
           <div class="strategy-page__tooltip" id="strategy-tooltip" aria-hidden="true"></div>
         </div>
@@ -60,6 +60,7 @@
       <aside class="strategy-page__allocation">
         <div class="strategy-page__allocation-head"><span class="strategy-page__eyebrow">Inside the strategy</span><h2>Komposisi aset</h2><p>Bobot awal yang membentuk garis gabungan.</p></div>
         <div id="strategy-asset-list" class="strategy-page__asset-list"></div>
+        <div id="strategy-research" class="strategy-page__research" hidden></div>
         <div class="strategy-page__allocation-foot">Return aset mengikuti periode chart yang dipilih.</div>
       </aside>
     </section>
@@ -74,6 +75,7 @@
   <script src="assets/js/strategies-data.js"></script>
   <script src="assets/js/strategy-chart.js"></script>
   <script src="assets/js/nav.js"></script>
+  <script src="assets/js/timeframe-labels.js"></script>
   <script src="assets/js/strategies-page.js"></script>
 </body>
 </html>
