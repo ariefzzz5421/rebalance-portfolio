@@ -8,22 +8,38 @@
   ];
   const $ = id => document.getElementById(id);
   const cache = new Map();
-  let active = currencies[0], range = '1Y', points = [], hovered = null, pinned = false, geometry = null, token = 0, raf = 0;
-  const format = (value, code) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: code === 'IDR' ? 8 : 5, minimumFractionDigits: code === 'IDR' ? 6 : 2 }).format(value);
+  let active = currencies[0], range = '1Y', points = [], rawEntry = null, reversed = false, hovered = null, pinned = false, geometry = null, token = 0, raf = 0;
+  const formatRate = value => new Intl.NumberFormat('id-ID', { maximumFractionDigits: reversed ? (active.code === 'IDR' ? 2 : 4) : (active.code === 'IDR' ? 8 : 5), minimumFractionDigits: reversed ? 0 : (active.code === 'IDR' ? 6 : 2) }).format(value);
+  const pair = item => reversed ? `USD / ${item.code}` : `${item.code} / USD`;
+  const rateText = value => reversed ? `1 USD = ${active.code} ${formatRate(value)}` : `1 ${active.code} = $${formatRate(value)}`;
   const percent = value => `${value > 0 ? '+' : ''}${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(value)}%`;
   const date = time => new Date(time).toLocaleString('id-ID', ['1H', '1D', '1W'].includes(range) ? { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' } : { day: 'numeric', month: 'short', year: 'numeric' });
 
   function renderCards() {
-    $('currency-grid').innerHTML = currencies.map(item => `<button type="button" class="currencies-page__choice${active.code === item.code ? ' is-active' : ''}" data-currency="${item.code}" aria-pressed="${active.code === item.code}" style="--currency-color:${item.color}"><img src="assets/flags/${item.flag}.svg" width="32" height="32" alt=""><span><strong>${item.code}</strong><small>${item.name}</small></span><b>${item.code} / USD</b></button>`).join('') + '<div class="currencies-page__base"><span class="currencies-page__usd">$</span><span><strong>USD</strong><small>Dolar AS · mata uang acuan</small></span><b>USD / USD = 1</b></div>';
+    $('currency-grid').innerHTML = currencies.map(item => `<button type="button" class="currencies-page__choice${active.code === item.code ? ' is-active' : ''}" data-currency="${item.code}" aria-pressed="${active.code === item.code}" style="--currency-color:${item.color}"><img src="assets/flags/${item.flag}.svg" width="32" height="32" alt=""><span><strong>${item.code}</strong><small>${item.name}</small></span><b>${pair(item)}</b></button>`).join('') + '<div class="currencies-page__base"><span class="currencies-page__usd">$</span><span><strong>USD</strong><small>Dolar AS · mata uang acuan</small></span><b>USD / USD = 1</b></div>';
   }
 
   function setState(message) { $('currency-state').textContent = message; $('currency-state').hidden = !message; }
+  function updatePair() {
+    $('currency-title').textContent = pair(active);
+    $('currency-subtitle').textContent = reversed ? `Nilai 1 USD dalam ${active.name}` : `Nilai 1 ${active.code} dalam dolar AS`;
+    $('currency-reverse').setAttribute('aria-label', `Balik pasangan menjadi ${reversed ? `${active.code} / USD` : `USD / ${active.code}`}`);
+  }
   function reset() { points = []; hovered = null; pinned = false; geometry = null; $('currency-price').textContent = '—'; $('currency-change').textContent = '—'; $('currency-change').className = ''; $('currency-asof').textContent = 'Memuat data pasar…'; $('currency-tooltip').classList.remove('is-visible'); draw(); }
+  function applyEntry(entry) {
+    points = window.PorsiFX.orientHistory(entry.history, reversed);
+    if (points.length < 2) throw new Error(`Histori ${active.code} untuk ${range} belum cukup. Pilih timeframe lain.`);
+    if (range === '1H' && Date.now() - points[points.length - 1].t > 2 * 3600000) throw new Error('Tidak ada transaksi kurs dalam dua jam terakhir. Coba 1D atau timeframe lain.');
+    const first = points[0], last = points[points.length - 1], change = (last.v / first.v - 1) * 100;
+    $('currency-price').textContent = rateText(last.v);
+    $('currency-change').textContent = `${percent(change)} · ${range}`;
+    $('currency-change').className = change >= 0 ? 'is-positive' : 'is-negative';
+    $('currency-asof').textContent = `Titik terakhir ${date(last.t)} · ${points.length.toLocaleString('id-ID')} titik pasar`;
+    setState(''); draw();
+  }
   async function load() {
     const id = ++token, item = active, frame = range;
-    reset(); setState('Memuat histori kurs…');
-    $('currency-title').textContent = `${item.code} / USD`;
-    $('currency-subtitle').textContent = `Nilai 1 ${item.code} dalam dolar AS`;
+    rawEntry = null; reset(); updatePair(); setState('Memuat histori kurs…');
     const key = `${item.code}:${frame}`;
     try {
       const cached = cache.get(key);
@@ -37,15 +53,7 @@
         cache.set(key, { data: entry, expires: Date.now() + (['1H', '1D', '1W'].includes(frame) ? 60000 : 900000) });
       }
       if (id !== token) return;
-      points = window.PorsiFX.invertHistory(entry.history);
-      if (points.length < 2) throw new Error(`Histori ${item.code} untuk ${frame} belum cukup. Pilih timeframe lain.`);
-      if (frame === '1H' && Date.now() - points[points.length - 1].t > 2 * 3600000) throw new Error('Tidak ada transaksi kurs dalam dua jam terakhir. Coba 1D atau timeframe lain.');
-      const first = points[0], last = points[points.length - 1], change = (last.v / first.v - 1) * 100;
-      $('currency-price').textContent = `1 ${item.code} = $${format(last.v, item.code)}`;
-      $('currency-change').textContent = `${percent(change)} · ${frame}`;
-      $('currency-change').className = change >= 0 ? 'is-positive' : 'is-negative';
-      $('currency-asof').textContent = `Titik terakhir ${date(last.t)} · ${points.length.toLocaleString('id-ID')} titik pasar`;
-      setState(''); draw();
+      rawEntry = entry; applyEntry(entry);
     } catch (error) { if (id === token) { setState(error.message || 'Data kurs belum tersedia.'); $('currency-asof').textContent = 'Sumber pasar belum tersedia'; } }
   }
 
@@ -61,18 +69,19 @@
     const g = geometry, x = p => pad.left + (p.t - sample[0].t) / (sample[sample.length - 1].t - sample[0].t) * g.plotWidth, y = p => pad.top + (g.max - p.v) / (g.max - g.min) * g.plotHeight;
     const css = getComputedStyle(document.documentElement), muted = css.getPropertyValue('--muted').trim(), line = css.getPropertyValue('--line').trim();
     ctx.font = '10px system-ui'; ctx.fillStyle = muted; ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.textBaseline = 'middle';
-    for (let i = 0; i < 5; i++) { const yy = pad.top + i / 4 * g.plotHeight, v = g.max - i / 4 * (g.max - g.min); ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(width - pad.right, yy); ctx.stroke(); ctx.textAlign = 'left'; ctx.fillText(format(v, active.code), width - pad.right + 7, yy); }
+    for (let i = 0; i < 5; i++) { const yy = pad.top + i / 4 * g.plotHeight, v = g.max - i / 4 * (g.max - g.min); ctx.beginPath(); ctx.moveTo(pad.left, yy); ctx.lineTo(width - pad.right, yy); ctx.stroke(); ctx.textAlign = 'left'; ctx.fillText(formatRate(v), width - pad.right + 7, yy); }
     ctx.textBaseline = 'top'; [sample[0], sample[Math.floor((sample.length - 1) / 2)], sample[sample.length - 1]].forEach((p, i) => { if (width < 450 && i === 1) return; ctx.textAlign = i === 0 ? 'left' : i === 2 ? 'right' : 'center'; ctx.fillText(date(p.t), x(p), height - pad.bottom + 10); });
     ctx.beginPath(); sample.forEach((p, i) => i ? ctx.lineTo(x(p), y(p)) : ctx.moveTo(x(p), y(p))); ctx.strokeStyle = active.color; ctx.lineWidth = 3.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
     const index = hovered == null ? sample.length - 1 : Math.min(sample.length - 1, hovered), point = sample[index], px = x(point), py = y(point);
     ctx.fillStyle = active.color; ctx.beginPath(); ctx.arc(px, py, hovered == null ? 4.5 : 6, 0, Math.PI * 2); ctx.fill();
     const tooltip = $('currency-tooltip');
-    if (hovered != null) { tooltip.innerHTML = `<strong>1 ${active.code} = $${format(point.v, active.code)}</strong><span>${date(point.t)}</span>`; tooltip.style.left = `${Math.max(88, Math.min(width - 88, px))}px`; tooltip.style.top = `${Math.max(74, py)}px`; tooltip.classList.add('is-visible'); tooltip.setAttribute('aria-hidden', 'false'); }
+    if (hovered != null) { tooltip.innerHTML = `<strong>${rateText(point.v)}</strong><span>${date(point.t)}</span>`; tooltip.style.left = `${Math.max(88, Math.min(width - 88, px))}px`; tooltip.style.top = `${Math.max(74, py)}px`; tooltip.classList.add('is-visible'); tooltip.setAttribute('aria-hidden', 'false'); }
     else { tooltip.classList.remove('is-visible'); tooltip.setAttribute('aria-hidden', 'true'); }
   }
   function scheduleDraw() { if (!raf) raf = requestAnimationFrame(() => { raf = 0; draw(); }); }
   function setPointer(event) { if (!geometry) return; const rect = $('currency-chart').getBoundingClientRect(), g = geometry, fraction = Math.max(0, Math.min(1, (event.clientX - rect.left - g.pad.left) / g.plotWidth)); hovered = Math.round(fraction * (g.sample.length - 1)); scheduleDraw(); }
   $('currency-grid').addEventListener('click', event => { const button = event.target.closest('[data-currency]'); if (!button || button.dataset.currency === active.code) return; active = currencies.find(item => item.code === button.dataset.currency); renderCards(); load(); });
+  $('currency-reverse').addEventListener('click', () => { reversed = !reversed; hovered = null; pinned = false; renderCards(); updatePair(); if (rawEntry) applyEntry(rawEntry); else draw(); });
   $('currency-range').addEventListener('change', event => { range = event.target.value; load(); });
   $('currency-chart').addEventListener('pointermove', setPointer, { passive: true });
   $('currency-chart').addEventListener('pointerdown', event => { setPointer(event); pinned = true; });

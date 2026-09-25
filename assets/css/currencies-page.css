@@ -16,6 +16,11 @@
 .currencies-page__usd{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:var(--surface-3);font-size:18px;font-weight:800}
 .currencies-page__panel{padding:clamp(18px,3vw,28px);border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:var(--shadow)}
 .currencies-page__panel-top{display:flex;align-items:start;justify-content:space-between;gap:16px}
+.currencies-page__pair{display:flex;align-items:center;gap:10px}
+.currencies-page__reverse{display:grid;place-items:center;width:34px;height:34px;flex:none;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface-2);color:var(--muted);cursor:pointer;transition:color .16s ease,border-color .16s ease,transform .16s ease}
+.currencies-page__reverse svg{width:17px;height:17px}
+.currencies-page__reverse:hover{color:var(--accent);border-color:var(--accent);transform:rotate(180deg)}
+.currencies-page__reverse:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .currencies-page__eyebrow{color:var(--muted);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800}
 .currencies-page__panel h2{margin:4px 0;font-size:clamp(20px,2.7vw,28px)}
 .currencies-page__panel-top p,.currencies-page__asof,.currencies-page__note{color:var(--muted);font-size:11px}
@@ -36,5 +41,5 @@
 .currencies-page__tooltip span{color:var(--muted)}
 .currencies-page__note{max-width:850px;margin:16px 0 0;line-height:1.6}
 @media(max-width:620px){.currencies-page__panel-top{flex-wrap:wrap}.currencies-page__panel label{width:100%;justify-content:space-between}.currencies-page__panel select{width:min(65%,190px)}.currencies-page__headline{margin-top:20px}.currencies-page__chart-wrap{height:300px}}
-@media(prefers-reduced-motion:reduce){.currencies-page__choice{transition:none}}
+@media(prefers-reduced-motion:reduce){.currencies-page__choice,.currencies-page__reverse{transition:none}}
 @media(max-width:380px){.sidebar{gap:3px;padding:6px}.sidebar__link{width:40px;height:40px}.sidebar__theme-btn{width:40px;height:40px}.sidebar__divider{margin:4px 1px;height:30px}}

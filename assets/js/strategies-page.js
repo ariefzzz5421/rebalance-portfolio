@@ -61,7 +61,7 @@
           ${icon}<span class="strategy-page__asset-name"><strong>${ticker}</strong><small>${name}</small></span>
           <span class="strategy-page__asset-data"><strong>${weight}%</strong><small class="${Number.isFinite(value) ? value >= 0 ? 'is-positive' : 'is-negative' : ''}">${percent(value)}</small></span>
         </button>
-        <a class="strategy-page__asset-detail" href="asset.html?ticker=${encodeURIComponent(ticker)}" aria-label="Buka detail ${ticker}" title="Buka detail ${ticker}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <a class="strategy-page__asset-detail" href="${window.porsiRoute('/asset')}?ticker=${encodeURIComponent(ticker)}" aria-label="Buka detail ${ticker}" title="Buka detail ${ticker}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
       </div>`;
     }).join('');
   }

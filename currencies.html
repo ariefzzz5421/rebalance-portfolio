@@ -26,7 +26,7 @@
     <div class="currencies-page__grid" id="currency-grid" aria-label="Pilih mata uang"></div>
     <section class="currencies-page__panel" aria-label="Grafik kurs">
       <div class="currencies-page__panel-top">
-        <div><span class="currencies-page__eyebrow">USD sebagai acuan</span><h2 id="currency-title">IDR / USD</h2><p id="currency-subtitle">Nilai 1 IDR dalam dolar AS</p></div>
+        <div><span class="currencies-page__eyebrow">Pasangan kurs</span><div class="currencies-page__pair"><h2 id="currency-title">IDR / USD</h2><button id="currency-reverse" class="currencies-page__reverse" type="button" aria-label="Balik pasangan menjadi USD / IDR" title="Balik pasangan kurs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 4 7l4 4M4 7h14a3 3 0 0 1 3 3v1M16 21l4-4-4-4m4 4H6a3 3 0 0 1-3-3v-1"/></svg></button></div><p id="currency-subtitle">Nilai 1 IDR dalam dolar AS</p></div>
         <label for="currency-range">Timeframe <select id="currency-range"><option value="1H">1H (1 Jam)</option><option value="1D">1D (1 Hari)</option><option value="1W">1W (1 Minggu)</option><option value="1M">1M (1 Bulan)</option><option value="1Y" selected>1Y (1 Tahun)</option><option value="5Y">5Y (5 Tahun)</option><option value="10Y">10Y (10 Tahun)</option><option value="MAX">MAX (10 Tahun)</option></select></label>
       </div>
       <div class="currencies-page__headline"><strong id="currency-price">—</strong><span id="currency-change">—</span></div>
@@ -36,7 +36,7 @@
         <div class="currencies-page__state" id="currency-state" role="status">Memuat histori kurs…</div>
         <div class="currencies-page__tooltip" id="currency-tooltip" aria-hidden="true"></div>
       </div>
-      <p class="currencies-page__note">Sumber: Yahoo Finance, harga penutupan pasangan USD/mata uang pilihan yang dibalik menjadi nilai 1 unit mata uang dalam USD. Persentase menunjukkan perubahan nilai mata uang tersebut terhadap USD selama periode terpilih. USD/USD selalu 1. Kurs pasar dapat berbeda dari kurs transaksi bank dan tidak mengubah nominal portofolio kamu.</p>
+      <p class="currencies-page__note">Sumber: Yahoo Finance, histori pasangan USD dan mata uang pilihan. Tombol balik menampilkan nilai kebalikannya dari titik pasar yang sama. Persentase mengikuti arah pasangan yang ditampilkan. Kurs pasar dapat berbeda dari kurs transaksi bank dan tidak mengubah nominal portofolio kamu.</p>
     </section>
   </main>
   <script src="assets/js/nav.js"></script>
