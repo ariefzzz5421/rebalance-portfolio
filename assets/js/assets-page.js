@@ -3,6 +3,7 @@
 const grid=document.getElementById('asset-grid'),status=document.getElementById('asset-status'),search=document.getElementById('asset-search');
 const CACHE_KEY='porsi.asset-library.market.v2',CACHE_TTL=15*60*1000;
 let market={},cards=[],redrawTimer=0,visibleCards=new Set(),sparkObserver=null,resizeObserver=null;
+const capitalQueue=new Set(),capitalSeen=new Set();let capitalTimer=0,capitalBusy=false;
 const lang=()=>window.PORSI_PREFS&&window.PORSI_PREFS.get?window.PORSI_PREFS.get().language:'id';
 const STATUS={
  id:{ok:'Market data dimuat · cache hingga 15 menit',err:'Market data tidak tersedia — asset library tetap bisa dibuka'},
@@ -16,7 +17,17 @@ const metricLabel=(short,long)=>`<span class="metric-mini__label"><b>${short}</b
 function card(a){
  const intel=window.assetIntel(a),tracked=!!intel.marketSymbol;
  const icon=window.assetIconHTML?window.assetIconHTML(a.ticker,'md'):`<span class="asset-icon asset-icon--md" style="--brand:${a.color}"><span class="asset-icon__mono">${a.ticker.slice(0,2)}</span></span>`;
- return `<a class="asset-card${tracked?'':' is-untracked'}" href="${window.porsiRoute('/asset')}?ticker=${encodeURIComponent(a.ticker)}" data-ticker="${a.ticker}" data-search="${(a.ticker+' '+a.name).toLowerCase()}">${icon}<div class="asset-card__body"><div class="asset-card__title"><strong>${a.ticker}</strong></div><div class="asset-card__name">${a.name}</div><div class="asset-card__metrics"><div class="metric-mini">${metricLabel('1M','1 Month')}<strong data-metric="m1">N/A</strong></div><div class="metric-mini">${metricLabel('1Y','1 Year')}<strong data-metric="y1">N/A</strong></div><div class="metric-mini">${metricLabel('5Y','5 Years')}<strong data-metric="y5">N/A</strong></div><div class="metric-mini">${metricLabel('10Y','10 Years')}<strong data-metric="y10">N/A</strong></div></div><canvas class="asset-card__spark" width="480" height="88" aria-hidden="true"></canvas></div><span class="asset-card__arrow">›</span></a>`;
+ return `<a class="asset-card${tracked?'':' is-untracked'}" href="${window.porsiRoute('/asset')}?ticker=${encodeURIComponent(a.ticker)}" data-ticker="${a.ticker}" data-search="${(a.ticker+' '+a.name).toLowerCase()}">${icon}<div class="asset-card__body"><div class="asset-card__title"><strong>${a.ticker}</strong></div><div class="asset-card__name">${a.name}</div><div class="asset-card__capital"><span data-cap-label>${window.PORSI_MARKET_CAP.label(null,a.ticker)}</span><strong data-cap-value>Memuat…</strong></div><div class="asset-card__metrics"><div class="metric-mini">${metricLabel('1M','1 Month')}<strong data-metric="m1">N/A</strong></div><div class="metric-mini">${metricLabel('1Y','1 Year')}<strong data-metric="y1">N/A</strong></div><div class="metric-mini">${metricLabel('5Y','5 Years')}<strong data-metric="y5">N/A</strong></div><div class="metric-mini">${metricLabel('10Y','10 Years')}<strong data-metric="y10">N/A</strong></div></div><canvas class="asset-card__spark" width="480" height="88" aria-hidden="true"></canvas></div><span class="asset-card__arrow">›</span></a>`;
+}
+function queueCapital(ticker){if(capitalSeen.has(ticker))return;capitalSeen.add(ticker);capitalQueue.add(ticker);clearTimeout(capitalTimer);capitalTimer=setTimeout(flushCapital,100);}
+async function flushCapital(){
+ if(capitalBusy)return;capitalBusy=true;
+ while(capitalQueue.size){
+  const batch=[...capitalQueue].slice(0,8);batch.forEach(ticker=>capitalQueue.delete(ticker));
+  try{const entries=await window.PORSI_MARKET_CAP.get(batch);batch.forEach(ticker=>{const el=cards.find(card=>card.dataset.ticker===ticker);if(!el)return;const entry=entries[ticker];el.querySelector('[data-cap-label]').textContent=window.PORSI_MARKET_CAP.label(entry,ticker);el.querySelector('[data-cap-value]').textContent=window.PORSI_MARKET_CAP.format(entry,true);if(entry&&entry.note)el.querySelector('.asset-card__capital').title=entry.note;});}
+  catch{batch.forEach(ticker=>{const el=cards.find(card=>card.dataset.ticker===ticker);if(el)el.querySelector('[data-cap-value]').textContent='Data belum tersedia';capitalSeen.delete(ticker);});}
+ }
+ capitalBusy=false;
 }
 function drawSpark(canvas,points,accent){
  if(!canvas||!Array.isArray(points)||points.length<2){if(canvas)canvas.style.opacity='.25';return;}
@@ -32,7 +43,8 @@ function hydrateCard(el){const m=marketForCard(el),c=m&&m.cagr||{};el.querySelec
 function hydrateCards(){cards.forEach(hydrateCard);requestAnimationFrame(redrawSparks);}
 function setupObservers(){
  if(sparkObserver)sparkObserver.disconnect();visibleCards.clear();
- if('IntersectionObserver'in window){sparkObserver=new IntersectionObserver(entries=>{const accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#3987e5';entries.forEach(entry=>{const el=entry.target;if(entry.isIntersecting&&!el.hidden){visibleCards.add(el);drawCardSpark(el,accent);}else visibleCards.delete(el);});},{rootMargin:'180px 0px'});cards.forEach(el=>sparkObserver.observe(el));}
+ if('IntersectionObserver'in window){sparkObserver=new IntersectionObserver(entries=>{const accent=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#3987e5';entries.forEach(entry=>{const el=entry.target;if(entry.isIntersecting&&!el.hidden){visibleCards.add(el);drawCardSpark(el,accent);queueCapital(el.dataset.ticker);}else visibleCards.delete(el);});},{rootMargin:'180px 0px'});cards.forEach(el=>sparkObserver.observe(el));}
+ else cards.forEach(el=>queueCapital(el.dataset.ticker));
  if(resizeObserver)resizeObserver.disconnect();
  if('ResizeObserver'in window){resizeObserver=new ResizeObserver(scheduleRedraw);resizeObserver.observe(grid);}
 }

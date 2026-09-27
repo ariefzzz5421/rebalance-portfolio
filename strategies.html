@@ -66,6 +66,15 @@
       </aside>
     </section>
 
+    <section class="strategy-simulator" aria-labelledby="simulator-title">
+      <div class="strategy-simulator__head"><div><span class="strategy-page__eyebrow">Simulasi historis</span><h2 id="simulator-title">Bagaimana jika kamu berinvestasi?</h2><p>Mengikuti strategi dan timeframe chart di atas.</p></div><span id="simulator-period">1Y</span></div>
+      <div class="strategy-simulator__grid">
+        <article class="strategy-simulator__card strategy-simulator__card--example"><div class="strategy-simulator__card-top"><span>Contoh siap lihat</span><strong>Rp100 juta</strong></div><p>Modal satu kali di awal periode, tanpa setoran tambahan.</p><div class="strategy-simulator__value" id="sim-default-value">—</div><div class="strategy-simulator__stats"><div><span>Modal awal</span><strong>Rp100.000.000</strong></div><div><span>Hasil investasi</span><strong id="sim-default-profit">—</strong></div><div><span>Return</span><strong id="sim-default-return">—</strong></div></div></article>
+        <article class="strategy-simulator__card"><div class="strategy-simulator__card-top"><span>Hitung versimu</span><strong>Sesuaikan</strong></div><div class="strategy-simulator__fields"><label>Modal awal <span>Rp</span><input id="sim-initial" type="number" min="0" max="1000000000000" step="1000000" inputmode="numeric" value="100000000" aria-label="Modal awal dalam Rupiah"></label><label>Setoran per bulan <span>Rp</span><input id="sim-monthly" type="number" min="0" max="1000000000000" step="100000" inputmode="numeric" value="1000000" aria-label="Setoran bulanan dalam Rupiah"></label></div><div class="strategy-simulator__value" id="sim-custom-value">—</div><div class="strategy-simulator__stats"><div><span>Total disetor</span><strong id="sim-custom-contributions">—</strong></div><div><span>Hasil investasi</span><strong id="sim-custom-profit">—</strong></div><div><span>Setoran</span><strong id="sim-custom-count">—</strong></div></div></article>
+      </div>
+      <p class="strategy-simulator__note" id="simulator-note">Nilai dihitung dengan bobot awal aset tanpa rebalancing; setoran bulanan dibelikan pada titik data pertama yang tersedia tiap bulan. Return mengikuti mata uang harga sumber dan tidak memasukkan perubahan kurs ke Rupiah, pajak, biaya, atau slippage. Ini ilustrasi historis, bukan proyeksi atau hasil akun nyata.</p>
+    </section>
+
     <p class="strategy-page__method" id="strategy-method">Simulasi historis berbobot tetap: setiap aset dibeli sesuai bobot awal lalu dibiarkan bergerak tanpa rebalancing. Garis aset dan strategi dinormalisasi ke 0% pada titik awal yang sama. Data bersumber dari Yahoo Finance; adjusted close dipakai bila tersedia. MAX dibatasi paling lama 10 tahun dan dimulai saat semua aset punya histori bersama. Hasil ini bukan return akun nyata.</p>
   </main>
   <script src="assets/js/marks.js"></script>
@@ -75,6 +84,8 @@
   <script src="assets/js/asset-data.js"></script>
   <script src="assets/js/strategies-data.js"></script>
   <script src="assets/js/strategy-chart.js"></script>
+  <script src="assets/js/strategy-simulator.js"></script>
+  <script src="assets/js/market-cap.js"></script>
   <script src="assets/js/nav.js"></script>
   <script src="assets/js/timeframe-labels.js"></script>
   <script src="assets/js/strategies-page.js"></script>

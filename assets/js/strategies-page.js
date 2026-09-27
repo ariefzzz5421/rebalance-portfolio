@@ -12,6 +12,7 @@
   const keys = Object.keys(strategies);
   const queryKey = new URLSearchParams(location.search).get('strategy');
   const methodText = $('#strategy-method').textContent;
+  const simulatorMethod = $('#simulator-note').textContent;
   let selected = strategies[queryKey] ? queryKey : keys[0];
   let activeLine = 'strategy';
   let range = '1Y';
@@ -23,6 +24,8 @@
   let pinned = false;
   let requestId = 0;
   let raf = 0;
+  let capitalData = {};
+  let capitalRequest = 0;
 
   function iconMarkup(strategy) {
     return `<span class="strategy-icon" style="--strategy-color:${strategy.color}" aria-hidden="true"><span class="strategy-icon__glyph strategy-icon__glyph--${strategy.icon}"></span></span>`;
@@ -56,14 +59,52 @@
     $('#strategy-asset-list').innerHTML = strategies[selected].parts.map(([ticker, name, weight], index) => {
       const icon = window.assetIconHTML ? window.assetIconHTML(ticker, 'md') : `<span class="strategy-page__asset-fallback">${ticker.slice(0, 1)}</span>`;
       const value = returns.get(ticker);
+      const cap = capitalData[ticker];
+      const capLabel = window.PORSI_MARKET_CAP.label(cap, ticker);
+      const capValue = cap ? window.PORSI_MARKET_CAP.format(cap, true) : 'Memuat…';
+      const capSource = cap && cap.url ? `<a href="${cap.url}" target="_blank" rel="noopener noreferrer" class="strategy-page__cap-source" aria-label="Sumber ${capLabel} ${ticker}: ${cap.source}">${cap.source} ↗</a>` : '';
       return `<div class="strategy-page__asset${activeLine === ticker ? ' is-focused' : ''}" data-asset-card="${ticker}" style="--asset-chart-color:${assetColors[ticker] || fallbackColors[index % fallbackColors.length]}">
         <button type="button" class="strategy-page__asset-select" data-line="${ticker}" aria-label="Sorot garis ${ticker}" aria-pressed="${activeLine === ticker}">
           ${icon}<span class="strategy-page__asset-name"><strong>${ticker}</strong><small>${name}</small></span>
           <span class="strategy-page__asset-data"><strong>${weight}%</strong><small class="${Number.isFinite(value) ? value >= 0 ? 'is-positive' : 'is-negative' : ''}">${percent(value)}</small></span>
         </button>
         <a class="strategy-page__asset-detail" href="${window.porsiRoute('/asset')}?ticker=${encodeURIComponent(ticker)}" aria-label="Buka detail ${ticker}" title="Buka detail ${ticker}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        <div class="strategy-page__cap-row" title="${cap && cap.note || ''}"><span>${capLabel}</span><strong>${capValue}</strong>${capSource}</div>
       </div>`;
     }).join('');
+  }
+
+  async function loadCapital() {
+    const id = ++capitalRequest;
+    const tickers = strategies[selected].parts.map(([ticker]) => ticker);
+    capitalData = {};
+    try { capitalData = await window.PORSI_MARKET_CAP.get(tickers); }
+    catch { capitalData = Object.fromEntries(tickers.map(ticker => [ticker, { status: 'unavailable', kind: 'marketCap' }])); }
+    if (id !== capitalRequest) return;
+    renderAssetList(new Map(result?.assets.map(asset => [asset.ticker, asset.return]) || []));
+  }
+
+  function money(value) { return Number.isFinite(value) ? `Rp${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value)}` : '—'; }
+  function renderSimulator() {
+    $('#simulator-period').textContent = range;
+    const ids = ['sim-default-value', 'sim-default-profit', 'sim-default-return', 'sim-custom-value', 'sim-custom-contributions', 'sim-custom-profit', 'sim-custom-count'];
+    if (!result) { ids.forEach(id => { $(`#${id}`).textContent = '—'; }); return; }
+    const example = window.StrategySimulator.simulate(result, 100000000, 0);
+    $('#sim-default-value').textContent = money(example.value);
+    $('#sim-default-profit').textContent = money(example.profit);
+    $('#sim-default-profit').className = example.profit >= 0 ? 'is-positive' : 'is-negative';
+    $('#sim-default-return').textContent = percent(example.return);
+    const initial = Number($('#sim-initial').value), monthly = Number($('#sim-monthly').value);
+    const valid = Number.isFinite(initial) && Number.isFinite(monthly) && initial >= 0 && monthly >= 0 && initial <= 1e12 && monthly <= 1e12 && initial + monthly > 0;
+    $('#sim-initial').setAttribute('aria-invalid', String(!valid));
+    $('#sim-monthly').setAttribute('aria-invalid', String(!valid));
+    if (!valid) { ['sim-custom-value', 'sim-custom-contributions', 'sim-custom-profit', 'sim-custom-count'].forEach(id => { $(`#${id}`).textContent = '—'; }); return; }
+    const custom = window.StrategySimulator.simulate(result, initial, monthly);
+    $('#sim-custom-value').textContent = money(custom.value);
+    $('#sim-custom-contributions').textContent = money(custom.contributions);
+    $('#sim-custom-profit').textContent = money(custom.profit);
+    $('#sim-custom-profit').className = custom.profit >= 0 ? 'is-positive' : 'is-negative';
+    $('#sim-custom-count').textContent = `${custom.deposits} bulan`;
   }
 
   function renderLegend(assets = []) {
@@ -112,6 +153,7 @@
   function renderSelection() {
     renderPicker();
     const strategy = strategies[selected];
+    capitalData = {};
     $('#active-strategy-icon').outerHTML = iconMarkup(strategy).replace('class="strategy-icon"', 'class="strategy-icon" id="active-strategy-icon"');
     $('#active-strategy-name').textContent = strategy.title;
     $('#strategy-range').value = range;
@@ -119,6 +161,8 @@
     renderAssetList();
     renderLegend();
     renderResearch();
+    renderSimulator();
+    loadCapital();
   }
 
   function symbolFor(ticker) {
@@ -186,6 +230,8 @@
     $('#strategy-asof').textContent = '—';
     renderAssetList();
     renderLegend();
+    renderSimulator();
+    $('#simulator-note').textContent = `${message} ${simulatorMethod}`;
     hideTooltip();
     draw();
     setState(message, message === 'Memuat histori pasar…');
@@ -219,6 +265,8 @@
       if (fallbackTickers.length) $('#strategy-method').textContent = `${methodText} Data ${fallbackTickers.join(', ')} menggunakan asumsi harga $1 karena histori penyedia tidak tersedia.`;
       renderAssetList(new Map(next.assets.map(asset => [asset.ticker, asset.return])));
       renderLegend(next.assets);
+      renderSimulator();
+      $('#simulator-note').textContent = simulatorMethod;
       setState('');
       draw();
     } catch (error) {
@@ -395,6 +443,7 @@
       renderSelection(); load();
     });
     $('#strategy-range').addEventListener('change', event => { range = event.target.value; $('#strategy-return-label').textContent = `Total return · ${range}`; load(); });
+    ['#sim-initial', '#sim-monthly'].forEach(selector => $(selector).addEventListener('input', renderSimulator));
     $('#strategy-chart-legend').addEventListener('click', event => { const button = event.target.closest('[data-line]'); if (button) focusLine(button.dataset.line); });
     $('#strategy-asset-list').addEventListener('click', event => { if (event.target.closest('a')) return; const card = event.target.closest('[data-asset-card]'); if (card) focusLine(card.dataset.assetCard); });
     const canvas = $('#strategy-chart');

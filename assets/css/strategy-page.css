@@ -117,3 +117,40 @@
 .strategy-page__research a:hover{border-color:var(--accent);color:var(--ink)}
 @media(max-width:520px){.strategy-page__chart-top{flex-wrap:wrap}.strategy-page__range-label{display:flex;align-items:center;width:100%;justify-content:space-between}.strategy-page__range-label span{margin:0}.strategy-page__range-label select{min-width:0;width:min(65%,190px)}.strategy-page__legend{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:360px){.strategy-page__range-label{display:flex}.strategy-page__range-label select{width:65%}.strategy-page__legend-item{min-width:0}}
+
+/* Live capitalization and historical contribution simulator. */
+.strategy-page__asset{flex-wrap:wrap}
+.strategy-page__asset-select{flex:1 1 calc(100% - 50px)}
+.strategy-page__cap-row{display:flex;align-items:baseline;gap:5px 7px;flex-wrap:wrap;width:100%;min-width:0;padding:0 5px 5px 52px;color:var(--muted);font-size:11px;line-height:1.3}
+.strategy-page__cap-row strong{min-width:0;color:var(--ink-2);font-size:11px;font-weight:750;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.strategy-page__cap-source{margin-left:auto;color:var(--accent);text-decoration:none;white-space:nowrap}
+.strategy-page__cap-source:hover{text-decoration:underline}
+.strategy-simulator{margin-top:22px;padding:clamp(18px,2.5vw,28px);border:1px solid var(--line);border-radius:22px;background:var(--surface);box-shadow:var(--shadow)}
+.strategy-simulator__head{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+.strategy-simulator__head h2{margin-top:4px;font-size:clamp(20px,2.6vw,28px);letter-spacing:-.035em}
+.strategy-simulator__head p{margin-top:5px;color:var(--muted);font-size:12px}
+.strategy-simulator__head>span{flex:none;padding:7px 11px;border:1px solid var(--line);border-radius:9px;color:var(--ink-2);font-size:11px;font-weight:800}
+.strategy-simulator__grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.strategy-simulator__card{min-width:0;padding:20px;border:1px solid var(--line);border-radius:17px;background:var(--surface-2)}
+.strategy-simulator__card--example{background:linear-gradient(135deg,color-mix(in oklab,var(--accent) 9%,var(--surface-2)),var(--surface-2) 68%)}
+.strategy-simulator__card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.strategy-simulator__card-top span{color:var(--muted);font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:.08em}
+.strategy-simulator__card-top strong{font-size:12px;color:var(--accent)}
+.strategy-simulator__card>p{margin-top:9px;color:var(--muted);font-size:11px}
+.strategy-simulator__value{min-width:0;max-width:100%;margin:22px 0 18px;font-size:clamp(24px,3.2vw,42px);font-weight:850;letter-spacing:-.05em;line-height:1.1;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.strategy-simulator__stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.strategy-simulator__stats>div{min-width:0;padding:11px;border:1px solid var(--line);border-radius:11px;background:var(--surface)}
+.strategy-simulator__stats span,.strategy-simulator__stats strong{display:block;min-width:0;overflow-wrap:anywhere}
+.strategy-simulator__stats span{color:var(--muted);font-size:10px}
+.strategy-simulator__stats strong{margin-top:5px;color:var(--ink);font-size:clamp(11px,1.15vw,14px);font-variant-numeric:tabular-nums}
+.strategy-simulator__stats strong.is-positive{color:var(--good)}.strategy-simulator__stats strong.is-negative{color:var(--crit)}
+.strategy-simulator__fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.strategy-simulator__fields label{position:relative;display:block;min-width:0;color:var(--muted);font-size:11px;font-weight:700}
+.strategy-simulator__fields label span{position:absolute;left:12px;bottom:12px;color:var(--muted);font-size:12px}
+.strategy-simulator__fields input{display:block;width:100%;height:43px;margin-top:6px;padding:0 10px 0 32px;border:1px solid var(--line-strong);border-radius:10px;background:var(--surface);color:var(--ink);font-family:inherit;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;outline:none}
+.strategy-simulator__fields input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.strategy-simulator__fields input[aria-invalid="true"]{border-color:var(--crit)}
+.strategy-simulator__note{max-width:900px;margin:15px 0 0;color:var(--muted);font-size:11px;line-height:1.55}
+@media(max-width:760px){.strategy-simulator__grid{grid-template-columns:1fr}.strategy-simulator__value{font-size:clamp(25px,6vw,38px)}}
+@media(max-width:520px){.strategy-simulator__stats{grid-template-columns:repeat(2,minmax(0,1fr))}.strategy-simulator__stats>div:last-child{grid-column:1/-1}.strategy-simulator__stats strong{font-size:12px}}
+@media(max-width:420px){.strategy-simulator__card{padding:15px}.strategy-simulator__stats{gap:5px}.strategy-simulator__stats>div{padding:8px}.strategy-simulator__stats strong{font-size:10px}.strategy-simulator__fields{grid-template-columns:1fr}.strategy-page__cap-row{padding-left:51px}}
