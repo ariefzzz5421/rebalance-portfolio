@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { simulate } = require('../assets/js/strategy-simulator');
+const { simulate, durationLabel } = require('../assets/js/strategy-simulator');
 
 const day = 86400000;
 const start = Date.UTC(2026, 0, 30);
@@ -40,4 +40,10 @@ test('each asset receives its strategy share of the initial and monthly deposits
   const simulated = simulate(split, 100000000, 1000000);
   assert.deepEqual(simulated.assetValues.map(asset => [asset.initial, asset.monthly]), [[60000000, 600000], [40000000, 400000]]);
   assert.ok(Math.abs(simulated.assetValues.reduce((sum, asset) => sum + asset.value, 0) - simulated.value) < 1e-6);
+});
+
+test('investment duration uses actual common market dates', () => {
+  assert.equal(durationLabel(Date.UTC(2024, 10, 29), Date.UTC(2026, 8, 29)), '669 hari');
+  assert.equal(durationLabel(0, 3600000), '1 jam');
+  assert.equal(durationLabel(0, 60000), '1 menit');
 });

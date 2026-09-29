@@ -110,6 +110,14 @@
       return `<div class="strategy-simulator__preview-row">${window.assetIconHTML(ticker, 'sm')}<div><strong>${ticker} <span>${weight}%</span></strong><small>${name}</small></div><div class="strategy-simulator__preview-values"><strong>${money(initial * weight / 100)}</strong><small>${monthly ? `${money(monthly * weight / 100)} / bulan` : 'Tanpa setoran'}</small>${calculated ? `<small>Nilai akhir ${money(calculated.value)}</small>` : ''}</div></div>`;
     }).join('');
   }
+  function renderDefaultPreview(values = []) {
+    $('#sim-default-asset-preview').innerHTML = strategies[selected].parts.map(([ticker, name, weight]) => {
+      const asset = values.find(item => item.ticker === ticker);
+      const initial = 100000000 * weight / 100;
+      const movement = asset && initial ? asset.value / initial - 1 : null;
+      return `<div class="strategy-simulator__default-asset"><div class="strategy-simulator__default-asset-head">${window.assetIconHTML(ticker, 'sm')}<div><strong>${ticker}</strong><small>${name}</small></div><span>${weight}%</span></div><div class="strategy-simulator__default-bar" style="--allocation-weight:${weight}%" aria-hidden="true"><i></i></div><div class="strategy-simulator__default-asset-row"><span>Modal awal</span><strong>${money(initial)}</strong></div><div class="strategy-simulator__default-asset-row"><span>Nilai akhir</span><strong>${asset ? money(asset.value) : '—'}</strong></div><div class="strategy-simulator__default-asset-return ${movement == null ? '' : movement >= 0 ? 'is-positive' : 'is-negative'}">${percent(movement)}</div></div>`;
+    }).join('');
+  }
   function renderSimulator() {
     const ids = ['sim-default-value', 'sim-default-profit', 'sim-default-return', 'sim-custom-value', 'sim-custom-contributions', 'sim-custom-profit', 'sim-custom-count'];
     $('#sim-default-strategy').textContent = strategies[selected].title;
@@ -118,8 +126,9 @@
     $('#sim-initial').setAttribute('aria-invalid', String(!valid));
     $('#sim-monthly').setAttribute('aria-invalid', String(!valid));
     renderPreview(initial, monthly);
-    if (!simResult) { ids.forEach(id => { $(`#${id}`).textContent = '—'; }); return; }
+    if (!simResult) { ids.forEach(id => { $(`#${id}`).textContent = '—'; }); renderDefaultPreview(); return; }
     const example = window.StrategySimulator.simulate(simResult, 100000000, 0);
+    renderDefaultPreview(example.assetValues);
     $('#sim-default-value').textContent = money(example.value);
     $('#sim-default-profit').textContent = money(example.profit);
     $('#sim-default-profit').className = example.profit >= 0 ? 'is-positive' : 'is-negative';
@@ -183,6 +192,7 @@
     const strategy = strategies[selected];
     capitalData = {};
     quoteData = {};
+    simResult = null;
     $('#active-strategy-icon').outerHTML = iconMarkup(strategy).replace('class="strategy-icon"', 'class="strategy-icon" id="active-strategy-icon"');
     $('#active-strategy-name').textContent = strategy.title;
     $('#strategy-range').value = range;
@@ -210,7 +220,7 @@
       });
       simResult = chartMath.build(assets, frame);
       const short = ['1H', '1D', '1W'].includes(frame);
-      const dates = `${dateLabel(simResult.start, short)} → ${dateLabel(simResult.end, short)}`;
+      const dates = `${dateLabel(simResult.start, short)} → ${dateLabel(simResult.end, short)} (${window.StrategySimulator.durationLabel(simResult.start, simResult.end)})`;
       $('#sim-default-dates').textContent = dates;
       $('#sim-custom-dates').textContent = `Periode: ${dates}`;
       renderSimulator();

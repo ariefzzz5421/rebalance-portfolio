@@ -26,5 +26,12 @@
     const value = assetValues.reduce((sum, asset) => sum + asset.value, 0);
     return { value, contributions, profit: value - contributions, return: contributions ? value / contributions - 1 : null, deposits, assetValues };
   }
-  return { simulate };
+  function durationLabel(start, end) {
+    const elapsed = Number(end) - Number(start);
+    if (!Number.isFinite(elapsed) || elapsed < 0) return '—';
+    if (elapsed >= 86400000) return `${new Intl.NumberFormat('id-ID').format(Math.round(elapsed / 86400000))} hari`;
+    if (elapsed >= 3600000) return `${Math.round(elapsed / 3600000)} jam`;
+    return `${Math.max(1, Math.round(elapsed / 60000))} menit`;
+  }
+  return { simulate, durationLabel };
 });

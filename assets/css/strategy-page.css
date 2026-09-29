@@ -204,3 +204,32 @@
 @media(max-width:900px){.strategy-simulator__custom-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.strategy-simulator__head{align-items:stretch;flex-direction:column}.strategy-simulator__period-label{grid-template-columns:auto minmax(0,1fr);align-items:center}.strategy-simulator__period-label select{min-width:0;width:100%}.strategy-simulator__hero{align-items:start;flex-direction:column}.strategy-simulator__stats{grid-template-columns:repeat(2,minmax(0,1fr))}.strategy-simulator__stats>div:last-child{grid-column:1/-1}.strategy-simulator__fields{grid-template-columns:1fr}}
 @media(max-width:380px){.strategy-simulator__preview-row{grid-template-columns:28px minmax(0,1fr)}.strategy-simulator__preview-values{grid-column:2;text-align:left}.strategy-page__asset-metrics{padding-left:6px}}
+
+/* The preset investment and editable calculator are separate destinations. */
+.strategy-simulator--default{gap:20px}
+.strategy-simulator--custom{margin-top:30px;background:color-mix(in oklab,var(--surface-2) 24%,var(--surface))}
+.strategy-simulator--custom .strategy-simulator__card{padding:0;border:0;background:transparent}
+.strategy-simulator__dates{overflow-wrap:anywhere}
+.strategy-simulator__default-allocation{margin-top:25px;padding-top:23px;border-top:1px solid var(--line)}
+.strategy-simulator__allocation-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.strategy-simulator__allocation-heading h3{margin-top:5px;font-size:clamp(16px,2vw,21px);letter-spacing:-.035em}
+.strategy-simulator__allocation-heading p{color:var(--muted);font-size:11px}
+.strategy-simulator__default-assets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.strategy-simulator__default-asset{min-width:0;padding:14px;border:1px solid var(--line);border-radius:14px;background:color-mix(in oklab,var(--surface) 88%,transparent);font-variant-numeric:tabular-nums}
+.strategy-simulator__default-asset-head{display:flex;align-items:center;gap:8px;min-width:0}
+.strategy-simulator__default-asset-head .asset-icon{width:32px;height:32px;flex:none}
+.strategy-simulator__default-asset-head div{min-width:0;flex:1}
+.strategy-simulator__default-asset-head strong,.strategy-simulator__default-asset-head small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strategy-simulator__default-asset-head strong{font-size:12px}
+.strategy-simulator__default-asset-head small{color:var(--muted);font-size:10px}
+.strategy-simulator__default-asset-head>span{padding:4px 6px;border-radius:7px;background:var(--surface-2);color:var(--ink-2);font-size:10px;font-weight:800}
+.strategy-simulator__default-bar{height:4px;margin:13px 0 12px;border-radius:4px;background:var(--line)}
+.strategy-simulator__default-bar i{display:block;width:var(--allocation-weight);height:100%;border-radius:inherit;background:var(--accent)}
+.strategy-simulator__default-asset-row{display:flex;justify-content:space-between;align-items:baseline;gap:5px;margin-top:7px}
+.strategy-simulator__default-asset-row span{flex:none;color:var(--muted);font-size:10px}
+.strategy-simulator__default-asset-row strong{min-width:0;font-size:11px;text-align:right;overflow-wrap:anywhere}
+.strategy-simulator__default-asset-return{margin-top:9px;font-size:11px;font-weight:800;text-align:right}
+.strategy-simulator__default-asset-return.is-positive{color:var(--good)}
+.strategy-simulator__default-asset-return.is-negative{color:var(--crit)}
+@media(max-width:1050px){.strategy-simulator__default-assets{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.strategy-simulator--custom{margin-top:24px}.strategy-simulator__allocation-heading{align-items:start;flex-direction:column}.strategy-simulator__default-assets{grid-template-columns:1fr}}

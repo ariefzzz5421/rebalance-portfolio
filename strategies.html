@@ -66,13 +66,17 @@
       </aside>
     </section>
 
-    <section class="strategy-simulator" aria-labelledby="simulator-title">
+    <section class="strategy-simulator strategy-simulator--default" aria-labelledby="simulator-title">
       <div class="strategy-simulator__head"><div><span class="strategy-page__eyebrow">Simulasi historis</span><h2 id="simulator-title">Bagaimana jika kamu berinvestasi?</h2><p>Periode simulasi dapat dipilih terpisah dari chart.</p></div><label class="strategy-simulator__period-label">Periode <select id="simulator-period" aria-label="Periode simulasi"><option value="1H">1H</option><option value="1D">1D</option><option value="1W">1W</option><option value="1M">1M</option><option value="1Y">1Y</option><option value="5Y">5Y</option><option value="10Y">10Y</option><option value="MAX" selected>MAX</option></select></label></div>
       <article class="strategy-simulator__card strategy-simulator__card--example" aria-labelledby="sim-example-title">
         <div class="strategy-simulator__card-top"><span id="sim-example-title">Contoh • Rp100 juta</span><strong>Investasi sekali di awal</strong></div>
         <div class="strategy-simulator__hero"><div><p class="strategy-simulator__overline">Nilai historis pada akhir periode</p><div class="strategy-simulator__value" id="sim-default-value" aria-live="polite">—</div><p class="strategy-simulator__dates" id="sim-default-dates">Memuat periode…</p></div><div class="strategy-simulator__return-badge"><span>Return</span><strong id="sim-default-return">—</strong></div></div>
         <div class="strategy-simulator__stats"><div><span>Modal awal</span><strong>Rp100.000.000</strong></div><div><span>Hasil investasi</span><strong id="sim-default-profit">—</strong></div><div><span>Strategi</span><strong id="sim-default-strategy">—</strong></div></div>
+        <div class="strategy-simulator__default-allocation"><div class="strategy-simulator__allocation-heading"><div><span class="strategy-page__eyebrow">Alokasi contoh</span><h3>Rp100 juta, dibagi per aset</h3></div><p>Nilai akhir mengikuti periode yang dipilih.</p></div><div id="sim-default-asset-preview" class="strategy-simulator__default-assets" aria-live="polite"></div></div>
       </article>
+    </section>
+
+    <section class="strategy-simulator strategy-simulator--custom" aria-labelledby="sim-custom-title">
       <article class="strategy-simulator__card strategy-simulator__card--custom" aria-labelledby="sim-custom-title">
         <div class="strategy-simulator__card-top"><span id="sim-custom-title">Simulasi versimu</span><strong>Atur modal & setoran</strong></div>
         <p class="strategy-simulator__dates" id="sim-custom-dates">Mengikuti periode simulasi di atas.</p>
