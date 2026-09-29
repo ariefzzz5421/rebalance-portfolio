@@ -12,7 +12,6 @@
   const keys = Object.keys(strategies);
   const queryKey = new URLSearchParams(location.search).get('strategy');
   const methodText = $('#strategy-method').textContent;
-  const simulatorMethod = $('#simulator-note').textContent;
   let selected = strategies[queryKey] ? queryKey : keys[0];
   let activeLine = 'strategy';
   let range = '1Y';
@@ -26,6 +25,10 @@
   let raf = 0;
   let capitalData = {};
   let capitalRequest = 0;
+  let quoteData = {};
+  let simRange = 'MAX';
+  let simResult = null;
+  let simRequestId = 0;
 
   function iconMarkup(strategy) {
     return `<span class="strategy-icon" style="--strategy-color:${strategy.color}" aria-hidden="true"><span class="strategy-icon__glyph strategy-icon__glyph--${strategy.icon}"></span></span>`;
@@ -62,6 +65,11 @@
       const cap = capitalData[ticker];
       const capLabel = window.PORSI_MARKET_CAP.label(cap, ticker);
       const capValue = cap ? window.PORSI_MARKET_CAP.format(cap, true) : 'Memuat…';
+      const quote = quoteData[ticker];
+      const price = quote && Number.isFinite(quote.price) && quote.price > 0 ? quote : cap && Number.isFinite(cap.price) && cap.price > 0 ? cap : null;
+      const priceDigits = price && price.price < 1 ? 6 : price && price.price < 100 ? 3 : 2;
+      const priceText = price ? `${price.currency || 'USD'} ${new Intl.NumberFormat('id-ID', { maximumFractionDigits: priceDigits }).format(price.price)}` : 'Belum tersedia';
+      const fdvText = cap && Number.isFinite(cap.fdv) && cap.fdv > 0 ? window.PORSI_MARKET_CAP.format({ value: cap.fdv, currency: cap.currency, status: 'ok' }, true) : '';
       const capSource = cap && cap.url ? `<a href="${cap.url}" target="_blank" rel="noopener noreferrer" class="strategy-page__cap-source" aria-label="Sumber ${capLabel} ${ticker}: ${cap.source}">${cap.source} ↗</a>` : '';
       return `<div class="strategy-page__asset${activeLine === ticker ? ' is-focused' : ''}" data-asset-card="${ticker}" style="--asset-chart-color:${assetColors[ticker] || fallbackColors[index % fallbackColors.length]}">
         <button type="button" class="strategy-page__asset-select" data-line="${ticker}" aria-label="Sorot garis ${ticker}" aria-pressed="${activeLine === ticker}">
@@ -69,7 +77,8 @@
           <span class="strategy-page__asset-data"><strong>${weight}%</strong><small class="${Number.isFinite(value) ? value >= 0 ? 'is-positive' : 'is-negative' : ''}">${percent(value)}</small></span>
         </button>
         <a class="strategy-page__asset-detail" href="${window.porsiRoute('/asset')}?ticker=${encodeURIComponent(ticker)}" aria-label="Buka detail ${ticker}" title="Buka detail ${ticker}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
-        <div class="strategy-page__cap-row" title="${cap && cap.note || ''}"><span>${capLabel}</span><strong>${capValue}</strong>${capSource}</div>
+        <div class="strategy-page__asset-metrics"><div><span>Harga terakhir</span><strong>${priceText}</strong></div><div title="${cap && cap.note || ''}"><span>${capLabel}</span><strong>${capValue}</strong></div>${fdvText ? `<div><span>FDV</span><strong>${fdvText}</strong></div>` : ''}</div>
+        ${capSource}
       </div>`;
     }).join('');
   }
@@ -85,26 +94,45 @@
   }
 
   function money(value) { return Number.isFinite(value) ? `Rp${new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value)}` : '—'; }
+  function inputAmount(input) { return Number(String(input.value).replace(/\D/g, '')); }
+  function formatAmountInput(input) {
+    const old = input.value, cursor = input.selectionStart || 0;
+    const digitsBefore = old.slice(0, cursor).replace(/\D/g, '').length;
+    const digits = old.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 13);
+    input.value = digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '';
+    let position = 0, count = 0;
+    while (position < input.value.length && count < digitsBefore) { if (/\d/.test(input.value[position])) count++; position++; }
+    input.setSelectionRange(position, position);
+  }
+  function renderPreview(initial, monthly, values = []) {
+    $('#sim-asset-preview').innerHTML = strategies[selected].parts.map(([ticker, name, weight]) => {
+      const calculated = values.find(asset => asset.ticker === ticker);
+      return `<div class="strategy-simulator__preview-row">${window.assetIconHTML(ticker, 'sm')}<div><strong>${ticker} <span>${weight}%</span></strong><small>${name}</small></div><div class="strategy-simulator__preview-values"><strong>${money(initial * weight / 100)}</strong><small>${monthly ? `${money(monthly * weight / 100)} / bulan` : 'Tanpa setoran'}</small>${calculated ? `<small>Nilai akhir ${money(calculated.value)}</small>` : ''}</div></div>`;
+    }).join('');
+  }
   function renderSimulator() {
-    $('#simulator-period').textContent = range;
     const ids = ['sim-default-value', 'sim-default-profit', 'sim-default-return', 'sim-custom-value', 'sim-custom-contributions', 'sim-custom-profit', 'sim-custom-count'];
-    if (!result) { ids.forEach(id => { $(`#${id}`).textContent = '—'; }); return; }
-    const example = window.StrategySimulator.simulate(result, 100000000, 0);
+    $('#sim-default-strategy').textContent = strategies[selected].title;
+    const initial = inputAmount($('#sim-initial')), monthly = inputAmount($('#sim-monthly'));
+    const valid = Number.isFinite(initial) && Number.isFinite(monthly) && initial >= 0 && monthly >= 0 && initial <= 1e12 && monthly <= 1e12 && initial + monthly > 0;
+    $('#sim-initial').setAttribute('aria-invalid', String(!valid));
+    $('#sim-monthly').setAttribute('aria-invalid', String(!valid));
+    renderPreview(initial, monthly);
+    if (!simResult) { ids.forEach(id => { $(`#${id}`).textContent = '—'; }); return; }
+    const example = window.StrategySimulator.simulate(simResult, 100000000, 0);
     $('#sim-default-value').textContent = money(example.value);
     $('#sim-default-profit').textContent = money(example.profit);
     $('#sim-default-profit').className = example.profit >= 0 ? 'is-positive' : 'is-negative';
     $('#sim-default-return').textContent = percent(example.return);
-    const initial = Number($('#sim-initial').value), monthly = Number($('#sim-monthly').value);
-    const valid = Number.isFinite(initial) && Number.isFinite(monthly) && initial >= 0 && monthly >= 0 && initial <= 1e12 && monthly <= 1e12 && initial + monthly > 0;
-    $('#sim-initial').setAttribute('aria-invalid', String(!valid));
-    $('#sim-monthly').setAttribute('aria-invalid', String(!valid));
+    $('#sim-default-return').className = example.return >= 0 ? 'is-positive' : 'is-negative';
     if (!valid) { ['sim-custom-value', 'sim-custom-contributions', 'sim-custom-profit', 'sim-custom-count'].forEach(id => { $(`#${id}`).textContent = '—'; }); return; }
-    const custom = window.StrategySimulator.simulate(result, initial, monthly);
+    const custom = window.StrategySimulator.simulate(simResult, initial, monthly);
     $('#sim-custom-value').textContent = money(custom.value);
     $('#sim-custom-contributions').textContent = money(custom.contributions);
     $('#sim-custom-profit').textContent = money(custom.profit);
     $('#sim-custom-profit').className = custom.profit >= 0 ? 'is-positive' : 'is-negative';
     $('#sim-custom-count').textContent = `${custom.deposits} bulan`;
+    renderPreview(initial, monthly, custom.assetValues);
   }
 
   function renderLegend(assets = []) {
@@ -154,6 +182,7 @@
     renderPicker();
     const strategy = strategies[selected];
     capitalData = {};
+    quoteData = {};
     $('#active-strategy-icon').outerHTML = iconMarkup(strategy).replace('class="strategy-icon"', 'class="strategy-icon" id="active-strategy-icon"');
     $('#active-strategy-name').textContent = strategy.title;
     $('#strategy-range').value = range;
@@ -163,6 +192,34 @@
     renderResearch();
     renderSimulator();
     loadCapital();
+  }
+
+  async function loadSimulator() {
+    const id = ++simRequestId, key = selected, frame = simRange;
+    simResult = null;
+    $('#sim-default-dates').textContent = 'Memuat periode pasar…';
+    $('#sim-custom-dates').textContent = 'Mengikuti periode simulasi di atas.';
+    renderSimulator();
+    try {
+      const data = await marketData(key, frame);
+      if (id !== simRequestId) return;
+      const assets = strategies[key].parts.map(([ticker, , weight]) => {
+        const entry = data[symbolFor(ticker)];
+        if (!entry || entry.error) throw new Error(`Histori ${ticker} belum tersedia.`);
+        return { ticker, weight: weight / 100, history: entry.totalReturnHistory || entry.history };
+      });
+      simResult = chartMath.build(assets, frame);
+      const short = ['1H', '1D', '1W'].includes(frame);
+      const dates = `${dateLabel(simResult.start, short)} → ${dateLabel(simResult.end, short)}`;
+      $('#sim-default-dates').textContent = dates;
+      $('#sim-custom-dates').textContent = `Periode: ${dates}`;
+      renderSimulator();
+    } catch (error) {
+      if (id !== simRequestId) return;
+      $('#sim-default-dates').textContent = error.message || 'Histori belum tersedia untuk periode ini.';
+      $('#sim-custom-dates').textContent = 'Coba periode lain.';
+      renderSimulator();
+    }
   }
 
   function symbolFor(ticker) {
@@ -230,8 +287,6 @@
     $('#strategy-asof').textContent = '—';
     renderAssetList();
     renderLegend();
-    renderSimulator();
-    $('#simulator-note').textContent = `${message} ${simulatorMethod}`;
     hideTooltip();
     draw();
     setState(message, message === 'Memuat histori pasar…');
@@ -246,6 +301,7 @@
     try {
       const data = await marketData(key, frame);
       if (id !== requestId) return;
+      quoteData = Object.fromEntries(strategy.parts.map(([ticker]) => [ticker, data[symbolFor(ticker)]]));
       const fallbackTickers = [];
       const assets = strategy.parts.map(([ticker, , weight]) => {
         const entry = data[symbolFor(ticker)];
@@ -265,8 +321,6 @@
       if (fallbackTickers.length) $('#strategy-method').textContent = `${methodText} Data ${fallbackTickers.join(', ')} menggunakan asumsi harga $1 karena histori penyedia tidak tersedia.`;
       renderAssetList(new Map(next.assets.map(asset => [asset.ticker, asset.return])));
       renderLegend(next.assets);
-      renderSimulator();
-      $('#simulator-note').textContent = simulatorMethod;
       setState('');
       draw();
     } catch (error) {
@@ -433,6 +487,7 @@
 
   function boot() {
     window.PORSI_TIMEFRAMES?.apply($('#strategy-range'));
+    window.PORSI_TIMEFRAMES?.apply($('#simulator-period'));
     renderSelection();
     $('#strategy-picker').addEventListener('click', event => {
       const choice = event.target.closest('[data-strategy]');
@@ -440,10 +495,11 @@
       selected = choice.dataset.strategy;
       activeLine = 'strategy';
       const url = new URL(location.href); url.searchParams.set('strategy', selected); history.replaceState(null, '', url);
-      renderSelection(); load();
+      renderSelection(); load(); loadSimulator();
     });
     $('#strategy-range').addEventListener('change', event => { range = event.target.value; $('#strategy-return-label').textContent = `Total return · ${range}`; load(); });
-    ['#sim-initial', '#sim-monthly'].forEach(selector => $(selector).addEventListener('input', renderSimulator));
+    $('#simulator-period').addEventListener('change', event => { simRange = event.target.value; loadSimulator(); });
+    ['#sim-initial', '#sim-monthly'].forEach(selector => $(selector).addEventListener('input', event => { formatAmountInput(event.target); renderSimulator(); }));
     $('#strategy-chart-legend').addEventListener('click', event => { const button = event.target.closest('[data-line]'); if (button) focusLine(button.dataset.line); });
     $('#strategy-asset-list').addEventListener('click', event => { if (event.target.closest('a')) return; const card = event.target.closest('[data-asset-card]'); if (card) focusLine(card.dataset.assetCard); });
     const canvas = $('#strategy-chart');
@@ -461,6 +517,7 @@
     new ResizeObserver(scheduleDraw).observe(canvas.parentElement);
     window.addEventListener('porsi:theme', scheduleDraw);
     load();
+    loadSimulator();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });

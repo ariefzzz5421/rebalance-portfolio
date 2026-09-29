@@ -22,8 +22,9 @@
       }
       startMonth = month;
     });
-    const value = assets.reduce((sum, asset, index) => sum + units[index] * asset.series[asset.series.length - 1].v, 0);
-    return { value, contributions, profit: value - contributions, return: contributions ? value / contributions - 1 : null, deposits };
+    const assetValues = assets.map((asset, index) => ({ ticker: asset.ticker, weight: asset.weight, initial: initial * asset.weight, monthly: monthly * asset.weight, value: units[index] * asset.series[asset.series.length - 1].v }));
+    const value = assetValues.reduce((sum, asset) => sum + asset.value, 0);
+    return { value, contributions, profit: value - contributions, return: contributions ? value / contributions - 1 : null, deposits, assetValues };
   }
   return { simulate };
 });

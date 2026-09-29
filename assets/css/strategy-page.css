@@ -154,3 +154,53 @@
 @media(max-width:760px){.strategy-simulator__grid{grid-template-columns:1fr}.strategy-simulator__value{font-size:clamp(25px,6vw,38px)}}
 @media(max-width:520px){.strategy-simulator__stats{grid-template-columns:repeat(2,minmax(0,1fr))}.strategy-simulator__stats>div:last-child{grid-column:1/-1}.strategy-simulator__stats strong{font-size:12px}}
 @media(max-width:420px){.strategy-simulator__card{padding:15px}.strategy-simulator__stats{gap:5px}.strategy-simulator__stats>div{padding:8px}.strategy-simulator__stats strong{font-size:10px}.strategy-simulator__fields{grid-template-columns:1fr}.strategy-page__cap-row{padding-left:51px}}
+
+/* Independent history example and custom allocation calculator. */
+.strategy-simulator{display:grid;gap:14px}
+.strategy-simulator__head{margin-bottom:2px;align-items:end}
+.strategy-simulator__period-label{display:grid;gap:5px;flex:none;color:var(--muted);font-size:11px;font-weight:750}
+.strategy-simulator__period-label select{min-width:170px;min-height:44px;padding:0 12px;border:1px solid var(--line-strong);border-radius:11px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:13px;cursor:pointer}
+.strategy-simulator__period-label select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.strategy-simulator__card{padding:clamp(18px,2.7vw,30px)}
+.strategy-simulator__card--example{position:relative;overflow:hidden;background:radial-gradient(circle at 85% 5%,color-mix(in oklab,var(--accent) 17%,transparent),transparent 42%),linear-gradient(135deg,var(--surface-2),var(--surface))}
+.strategy-simulator__card--example:before{content:"";position:absolute;left:0;top:20px;bottom:20px;width:3px;border-radius:3px;background:var(--accent)}
+.strategy-simulator__card-top{align-items:center}
+.strategy-simulator__card-top strong{color:var(--ink-2);font-size:11px}
+.strategy-simulator__hero{display:flex;justify-content:space-between;align-items:end;gap:20px;padding:23px 0 21px}
+.strategy-simulator__overline{color:var(--muted);font-size:11px;font-weight:700}
+.strategy-simulator__value{margin:9px 0 0;font-size:clamp(32px,5vw,62px);line-height:1.02}
+.strategy-simulator__dates{margin-top:10px;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.strategy-simulator__return-badge{display:grid;gap:4px;min-width:120px;padding:13px 16px;border:1px solid var(--line);border-radius:14px;background:var(--surface);text-align:right;font-variant-numeric:tabular-nums}
+.strategy-simulator__return-badge span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+.strategy-simulator__return-badge strong{font-size:clamp(16px,2vw,24px);letter-spacing:-.04em}
+.strategy-simulator__return-badge .is-positive{color:var(--good)}.strategy-simulator__return-badge .is-negative{color:var(--crit)}
+.strategy-simulator__stats{grid-template-columns:repeat(3,minmax(0,1fr))}
+.strategy-simulator__stats>div{padding:13px 15px;border-radius:12px}
+.strategy-simulator__stats strong{font-size:clamp(12px,1.2vw,16px)}
+.strategy-simulator__custom-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(250px,.9fr);gap:22px;margin-top:15px}
+.strategy-simulator__fields{margin:0}
+.strategy-simulator__fields input{height:48px;font-size:15px}
+.strategy-simulator__custom-result{margin:21px 0 15px}
+.strategy-simulator__custom-result>span{color:var(--muted);font-size:11px;font-weight:700}
+.strategy-simulator__custom-result .strategy-simulator__value{font-size:clamp(28px,3.8vw,48px)}
+.strategy-simulator__breakdown{min-width:0;padding:17px;border:1px solid var(--line);border-radius:15px;background:var(--surface)}
+.strategy-simulator__breakdown h3{margin:4px 0;font-size:18px;letter-spacing:-.03em}
+.strategy-simulator__breakdown p{color:var(--muted);font-size:11px}
+.strategy-simulator__preview{display:grid;gap:8px;margin-top:14px}
+.strategy-simulator__preview-row{display:grid;grid-template-columns:32px minmax(0,1fr) minmax(0,auto);align-items:center;gap:9px;min-width:0;padding:9px;border:1px solid var(--line);border-radius:11px;background:var(--surface-2)}
+.strategy-simulator__preview-row .asset-icon{width:32px;height:32px}
+.strategy-simulator__preview-row strong,.strategy-simulator__preview-row small{display:block;min-width:0;overflow-wrap:anywhere}
+.strategy-simulator__preview-row strong{font-size:12px}.strategy-simulator__preview-row strong span{color:var(--muted);font-size:10px}
+.strategy-simulator__preview-row small{margin-top:2px;color:var(--muted);font-size:10px}
+.strategy-simulator__preview-values{text-align:right;font-variant-numeric:tabular-nums}
+.strategy-simulator__preview-values strong{font-size:12px}
+.strategy-simulator__note{margin:0}
+.strategy-page__asset-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:100%;padding:2px 5px 0 52px}
+.strategy-page__asset-metrics>div{min-width:0}
+.strategy-page__asset-metrics span,.strategy-page__asset-metrics strong{display:block;min-width:0;overflow-wrap:anywhere}
+.strategy-page__asset-metrics span{color:var(--muted);font-size:10px}
+.strategy-page__asset-metrics strong{margin-top:3px;color:var(--ink-2);font-size:11px;font-variant-numeric:tabular-nums}
+.strategy-page__asset>.strategy-page__cap-source{display:block;margin:0 5px 3px auto;font-size:10px}
+@media(max-width:900px){.strategy-simulator__custom-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.strategy-simulator__head{align-items:stretch;flex-direction:column}.strategy-simulator__period-label{grid-template-columns:auto minmax(0,1fr);align-items:center}.strategy-simulator__period-label select{min-width:0;width:100%}.strategy-simulator__hero{align-items:start;flex-direction:column}.strategy-simulator__stats{grid-template-columns:repeat(2,minmax(0,1fr))}.strategy-simulator__stats>div:last-child{grid-column:1/-1}.strategy-simulator__fields{grid-template-columns:1fr}}
+@media(max-width:380px){.strategy-simulator__preview-row{grid-template-columns:28px minmax(0,1fr)}.strategy-simulator__preview-values{grid-column:2;text-align:left}.strategy-page__asset-metrics{padding-left:6px}}

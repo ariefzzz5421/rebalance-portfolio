@@ -60,7 +60,9 @@ async function cryptoCapital(tickers) {
     return Object.fromEntries(tickers.map(ticker => {
       const row = byId.get(COINS[ticker]);
       const value = Number(row && row.market_cap);
-      return [ticker, { kind: 'marketCap', value: Number.isFinite(value) && value > 0 ? value : null, currency: 'USD', source: 'CoinGecko', url: `https://www.coingecko.com/en/coins/${COINS[ticker]}`, asOf: row && row.last_updated || null, status: value > 0 ? 'ok' : 'unavailable' }];
+      const fdv = Number(row && row.fully_diluted_valuation);
+      const price = Number(row && row.current_price);
+      return [ticker, { kind: 'marketCap', value: Number.isFinite(value) && value > 0 ? value : null, fdv: Number.isFinite(fdv) && fdv > 0 ? fdv : null, price: Number.isFinite(price) && price > 0 ? price : null, currency: 'USD', source: 'CoinGecko', url: `https://www.coingecko.com/en/coins/${COINS[ticker]}`, asOf: row && row.last_updated || null, status: value > 0 ? 'ok' : 'unavailable' }];
     }));
   } catch {
     return Object.fromEntries(tickers.map(ticker => [ticker, { kind: 'marketCap', value: null, currency: 'USD', source: 'CoinGecko', url: `https://www.coingecko.com/en/coins/${COINS[ticker]}`, status: 'unavailable' }]));

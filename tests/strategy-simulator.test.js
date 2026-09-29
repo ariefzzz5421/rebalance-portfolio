@@ -28,3 +28,16 @@ test('invalid amounts are rejected', () => {
   assert.throws(() => simulate(result, -1, 0));
   assert.throws(() => simulate(result, 0, Number.POSITIVE_INFINITY));
 });
+
+test('each asset receives its strategy share of the initial and monthly deposits', () => {
+  const split = {
+    series: [{ t: start, v: 100 }, { t: Date.UTC(2026, 1, 2), v: 110 }],
+    assets: [
+      { ticker: 'A', weight: .6, series: [{ t: start, v: 100 }, { t: Date.UTC(2026, 1, 2), v: 120 }] },
+      { ticker: 'B', weight: .4, series: [{ t: start, v: 100 }, { t: Date.UTC(2026, 1, 2), v: 95 }] },
+    ],
+  };
+  const simulated = simulate(split, 100000000, 1000000);
+  assert.deepEqual(simulated.assetValues.map(asset => [asset.initial, asset.monthly]), [[60000000, 600000], [40000000, 400000]]);
+  assert.ok(Math.abs(simulated.assetValues.reduce((sum, asset) => sum + asset.value, 0) - simulated.value) < 1e-6);
+});
